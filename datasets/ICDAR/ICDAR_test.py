@@ -9,8 +9,7 @@ class IcdarTest(tfds.testing.DatasetBuilderTestCase):
   # TODO(ICDAR):
   DATASET_CLASS = ICDAR.Icdar
   SPLITS = {
-      'train': 3,  # Number of fake train example
-      'test': 1,  # Number of fake test example
+      'train': 7  # Number of fake train example
   }
 
   # If you are calling `download/download_and_extract` with a dict, like:

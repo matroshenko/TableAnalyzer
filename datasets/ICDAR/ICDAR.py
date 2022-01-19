@@ -74,7 +74,8 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
         horz_split_points_image = table.create_horz_split_points_image()
         vert_split_points_image = table.create_vert_split_points_image()
         # Uncomment to debug
-        # self._dump_debug_image(table.id, table_image, horz_split_points_image, vert_split_points_image)
+        # debug_file_name = '{}-{}.png'.format(stem, table.id)
+        # self._dump_debug_image(debug_file_name, table_image, horz_split_points_image, vert_split_points_image)
         yield key, {
           'image': self._image_to_byte_array(table_image),
           'horz_split_points': self._image_to_byte_array(horz_split_points_image),
@@ -90,23 +91,29 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
       page_number = int(region_node.get('page')) - 1
       table_rect = self._get_bounding_box(page_height, region_node)
       cells_node = table_structure_node.find('region')
-      cells = [self._get_cell(page_height, node) for node in cells_node]
+      col_increment = int(cells_node.get('col-increment'))
+      row_increment = int(cells_node.get('row-increment'))
+      cells = [self._get_cell(page_height, node, row_increment, col_increment) for node in cells_node]
       yield page_number, Table(table_id, table_rect, cells)
 
   def _get_bounding_box(self, page_height, xml_node):
     bounding_box_node = xml_node.find('bounding-box')
-    left = int(bounding_box_node.get('x1'))
-    top = page_height - int(bounding_box_node.get('y2'))
-    right = int(bounding_box_node.get('x2'))
-    bottom = page_height - int(bounding_box_node.get('y1'))
+    left = self._to_int(bounding_box_node.get('x1'))
+    top = page_height - self._to_int(bounding_box_node.get('y2'))
+    right = self._to_int(bounding_box_node.get('x2'))
+    bottom = page_height - self._to_int(bounding_box_node.get('y1'))
     return Rect(left, top, right, bottom)
 
-  def _get_cell(self, page_height, xml_node):
+  def _to_int(self, str):
+    result = str.replace('ß', '6')
+    return int(result)
+
+  def _get_cell(self, page_height, xml_node, row_increment, col_increment):
     rect = self._get_bounding_box(page_height, xml_node)
-    col_start = int(xml_node.get('start-col'))
-    col_end = int(xml_node.get('end-col', col_start))
-    row_start = int(xml_node.get('start-row'))
-    row_end = int(xml_node.get('end-row', row_start))
+    col_start = int(xml_node.get('start-col')) + col_increment
+    col_end = int(xml_node.get('end-col', col_start)) + col_increment
+    row_start = int(xml_node.get('start-row')) + row_increment
+    row_end = int(xml_node.get('end-row', row_start)) + row_increment
     return Cell(rect, col_start, col_end, row_start, row_end)
 
   def _image_to_byte_array(self, image):
@@ -115,10 +122,10 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     imgByteArr = imgByteArr.getvalue()
     return imgByteArr
 
-  def _dump_debug_image(self, table_id, table_image, horz_split_points_image, vert_split_points_image):
+  def _dump_debug_image(self, file_name, table_image, horz_split_points_image, vert_split_points_image):
     split_points_image = self._get_split_points_image(horz_split_points_image, vert_split_points_image)
     blended_image = PIL.Image.blend(table_image, split_points_image, 0.5)
-    blended_image.save('debug_image_{}.png'.format(table_id))
+    blended_image.save(file_name)
 
   def _get_split_points_image(self, first, second):
     assert first.size == second.size

@@ -110,10 +110,14 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
 
   def _get_cell(self, page_height, xml_node, row_increment, col_increment):
     rect = self._get_bounding_box(page_height, xml_node)
-    col_start = int(xml_node.get('start-col')) + col_increment
-    col_end = int(xml_node.get('end-col', col_start)) + col_increment
-    row_start = int(xml_node.get('start-row')) + row_increment
-    row_end = int(xml_node.get('end-row', row_start)) + row_increment
+    col_start = int(xml_node.get('start-col'))
+    col_end = int(xml_node.get('end-col', col_start))
+    row_start = int(xml_node.get('start-row'))
+    row_end = int(xml_node.get('end-row', row_start))
+    col_start += col_increment
+    col_end += col_increment
+    row_start += row_increment
+    row_end += row_increment
     return Cell(rect, col_start, col_end, row_start, row_end)
 
   def _image_to_byte_array(self, image):

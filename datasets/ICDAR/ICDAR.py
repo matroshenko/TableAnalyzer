@@ -91,9 +91,9 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
       page_number = int(region_node.get('page')) - 1
       table_rect = self._get_bounding_box(page_height, region_node)
       cells_node = table_structure_node.find('region')
-      col_increment = int(cells_node.get('col-increment'))
-      row_increment = int(cells_node.get('row-increment'))
-      cells = [self._get_cell(page_height, node, row_increment, col_increment) for node in cells_node]
+      cells = [self._get_cell(page_height, node) for node in cells_node]
+      self._fix_grid_coordinates(cells)
+
       yield page_number, Table(table_id, table_rect, cells)
 
   def _get_bounding_box(self, page_height, xml_node):
@@ -108,16 +108,12 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     result = str.replace('ß', '6')
     return int(result)
 
-  def _get_cell(self, page_height, xml_node, row_increment, col_increment):
+  def _get_cell(self, page_height, xml_node):
     rect = self._get_bounding_box(page_height, xml_node)
     col_start = int(xml_node.get('start-col'))
     col_end = int(xml_node.get('end-col', col_start))
     row_start = int(xml_node.get('start-row'))
     row_end = int(xml_node.get('end-row', row_start))
-    col_start += col_increment
-    col_end += col_increment
-    row_start += row_increment
-    row_end += row_increment
     return Cell(rect, col_start, col_end, row_start, row_end)
 
   def _image_to_byte_array(self, image):
@@ -143,6 +139,15 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
         result_pixels[i, j] = (max(first_pixels[i, j], second_pixels[i, j]), 0, 0)
     return result
 
+  def _fix_grid_coordinates(self, cells):
+    assert cells
+    min_row_start = min(cell.row_start for cell in cells)
+    min_col_start = min(cell.col_start for cell in cells)
+    for cell in cells:
+      cell.row_start -= min_row_start
+      cell.row_end -= min_row_start
+      cell.col_start -= min_col_start
+      cell.col_end -= min_col_start
 
 Rect = namedtuple('Rect', ['left', 'top', 'right', 'bottom'])
 

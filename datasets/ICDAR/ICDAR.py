@@ -176,7 +176,7 @@ class Table(object):
       assert top_adjacent_cells
       split_point_interval = (
         max(cell.rect.bottom - self.rect.top for cell in top_adjacent_cells), 
-        min(cell.rect.top - self.rect.top for cell in bottom_adjacent_cells)
+        min(cell.rect.top - self.rect.top for cell in bottom_adjacent_cells) + 1
       )
       self._draw_horz_white_strip(split_point_interval, result)
 
@@ -198,7 +198,7 @@ class Table(object):
       assert left_adjacent_cells
       split_point_interval = (
         max(cell.rect.right - self.rect.left for cell in left_adjacent_cells), 
-        min(cell.rect.left - self.rect.left for cell in right_adjacent_cells)
+        min(cell.rect.left - self.rect.left for cell in right_adjacent_cells) + 1
       )
       self._draw_vert_white_strip(split_point_interval, result)
 

@@ -22,6 +22,10 @@ It should also contain any processing which has been applied (if any),
 _CITATION = """
 """
 
+_FILES_TO_IGNORE = [
+  'eu-015'  # GT cells lie outside page rect
+]
+
 class Icdar(tfds.core.GeneratorBasedBuilder):
   """DatasetBuilder for ICDAR dataset."""
 
@@ -63,6 +67,9 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     for pdf_file_path in glob.glob(os.path.join(path, '**/*.pdf'), recursive=True):
       pdf_file_path = pathlib.Path(pdf_file_path)
       stem = pdf_file_path.stem
+      if stem in _FILES_TO_IGNORE:
+        continue
+      
       region_file_path = pdf_file_path.with_name(stem + '-reg.xml')
       structure_file_path = pdf_file_path.with_name(stem + '-str.xml')
 
@@ -100,8 +107,10 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     bounding_box_node = xml_node.find('bounding-box')
     left = self._to_int(bounding_box_node.get('x1'))
     top = page_height - self._to_int(bounding_box_node.get('y2'))
+    assert top >= 0
     right = self._to_int(bounding_box_node.get('x2'))
     bottom = page_height - self._to_int(bounding_box_node.get('y1'))
+    assert bottom >= 0
     return Rect(left, top, right, bottom)
 
   def _to_int(self, str):

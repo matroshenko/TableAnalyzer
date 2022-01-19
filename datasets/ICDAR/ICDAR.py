@@ -6,6 +6,9 @@ import xml.etree.ElementTree as ET
 import pdf2image
 import PIL
 import io
+import os
+import glob
+import pathlib
 
 # TODO(ICDAR): Markdown description  that will appear on the catalog page.
 _DESCRIPTION = """
@@ -57,7 +60,8 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
   def _generate_examples(self, path):
     """Yields examples."""
 
-    for pdf_file_path in path.glob('*.pdf'):
+    for pdf_file_path in glob.glob(os.path.join(path, '**/*.pdf'), recursive=True):
+      pdf_file_path = pathlib.Path(pdf_file_path)
       stem = pdf_file_path.stem
       region_file_path = pdf_file_path.with_name(stem + '-reg.xml')
       structure_file_path = pdf_file_path.with_name(stem + '-str.xml')
@@ -69,7 +73,8 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
         table_image = page.crop(table.rect)
         horz_split_points_image = table.create_horz_split_points_image()
         vert_split_points_image = table.create_vert_split_points_image()
-        self._dump_debug_image(table.id, table_image, horz_split_points_image, vert_split_points_image)
+        # Uncomment to debug
+        # self._dump_debug_image(table.id, table_image, horz_split_points_image, vert_split_points_image)
         yield key, {
           'image': self._image_to_byte_array(table_image),
           'horz_split_points': self._image_to_byte_array(horz_split_points_image),
@@ -111,9 +116,21 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     return imgByteArr
 
   def _dump_debug_image(self, table_id, table_image, horz_split_points_image, vert_split_points_image):
-    table_image.save('table_{}.png'.format(table_id))
-    horz_split_points_image.save('horz_split_points_{}.png'.format(table_id))
-    vert_split_points_image.save('vert_split_points_{}.png'.format(table_id))
+    split_points_image = self._get_split_points_image(horz_split_points_image, vert_split_points_image)
+    blended_image = PIL.Image.blend(table_image, split_points_image, 0.5)
+    blended_image.save('debug_image_{}.png'.format(table_id))
+
+  def _get_split_points_image(self, first, second):
+    assert first.size == second.size
+    assert first.mode == second.mode
+    result = PIL.Image.new('RGB', first.size)
+    first_pixels = first.load()
+    second_pixels = second.load()
+    result_pixels = result.load()
+    for i in range(result.size[0]):
+      for j in range(result.size[1]):
+        result_pixels[i, j] = (max(first_pixels[i, j], second_pixels[i, j]), 0, 0)
+    return result
 
 
 Rect = namedtuple('Rect', ['left', 'top', 'right', 'bottom'])

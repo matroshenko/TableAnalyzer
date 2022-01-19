@@ -6,7 +6,6 @@ import ICDAR
 
 class IcdarTest(tfds.testing.DatasetBuilderTestCase):
   """Tests for ICDAR dataset."""
-  # TODO(ICDAR):
   DATASET_CLASS = ICDAR.Icdar
   SPLITS = {
       'train': 7  # Number of fake train example

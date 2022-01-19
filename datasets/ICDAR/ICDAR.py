@@ -67,12 +67,13 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
         key = '{}-{}'.format(stem, table.id)
         page = pages[page_number]
         table_image = page.crop(table.rect)
-        # Uncomment to debug
-        # table_image.save('table-{}.png'.format(table.id))
+        horz_split_points_image = table.create_horz_split_points_image()
+        vert_split_points_image = table.create_vert_split_points_image()
+        self._dump_debug_image(table.id, table_image, horz_split_points_image, vert_split_points_image)
         yield key, {
           'image': self._image_to_byte_array(table_image),
-          'horz_split_points': self._image_to_byte_array(table.create_horz_split_points_image()),
-          'vert_split_points': self._image_to_byte_array(table.create_vert_split_points_image())
+          'horz_split_points': self._image_to_byte_array(horz_split_points_image),
+          'vert_split_points': self._image_to_byte_array(vert_split_points_image)
         }
 
   def _generate_tables(self, page_height, region_file_path, structure_file_path):
@@ -109,6 +110,11 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     imgByteArr = imgByteArr.getvalue()
     return imgByteArr
 
+  def _dump_debug_image(self, table_id, table_image, horz_split_points_image, vert_split_points_image):
+    table_image.save('table_{}.png'.format(table_id))
+    horz_split_points_image.save('horz_split_points_{}.png'.format(table_id))
+    vert_split_points_image.save('vert_split_points_{}.png'.format(table_id))
+
 
 Rect = namedtuple('Rect', ['left', 'top', 'right', 'bottom'])
 
@@ -129,14 +135,86 @@ class Table(object):
     self.cells = cells
 
   def create_horz_split_points_image(self):
-    # TODO
     width = self.rect.right - self.rect.left
     height = self.rect.bottom - self.rect.top
-    return PIL.Image.new('L', (width, height))
+    result = PIL.Image.new('L', (width, height))
+
+    split_point_index = 0
+    while True:
+      top_adjacent_cells = self._get_top_adjacent_cells(split_point_index)
+      bottom_adjacent_cells = self._get_bottom_adjacent_cells(split_point_index)
+      if not bottom_adjacent_cells:
+        break
+      assert top_adjacent_cells
+      split_point_interval = (
+        max(cell.rect.bottom - self.rect.top for cell in top_adjacent_cells), 
+        min(cell.rect.top - self.rect.top for cell in bottom_adjacent_cells)
+      )
+      self._draw_horz_white_strip(split_point_interval, result)
+
+      split_point_index += 1
+
+    return result
 
   def create_vert_split_points_image(self):
-    # TODO
     width = self.rect.right - self.rect.left
     height = self.rect.bottom - self.rect.top
-    return PIL.Image.new('L', (width, height))
+    result = PIL.Image.new('L', (width, height))
+
+    split_point_index = 0
+    while True:
+      left_adjacent_cells = self._get_left_adjacent_cells(split_point_index)
+      right_adjacent_cells = self._get_right_adjacent_cells(split_point_index)
+      if not right_adjacent_cells:
+        break
+      assert left_adjacent_cells
+      split_point_interval = (
+        max(cell.rect.right - self.rect.left for cell in left_adjacent_cells), 
+        min(cell.rect.left - self.rect.left for cell in right_adjacent_cells)
+      )
+      self._draw_vert_white_strip(split_point_interval, result)
+
+      split_point_index += 1
+
+    return result
+
+  def _draw_vert_white_strip(self, interval, image):
+    pixels = image.load()
+    for i in range(image.height):
+      for j in range(interval[0], interval[1]):
+        pixels[j, i] = 255
+
+  def _draw_horz_white_strip(self, interval, image):
+    pixels = image.load()
+    for i in range(interval[0], interval[1]):
+      for j in range(image.width):
+        pixels[j, i] = 255
+
+  def _get_left_adjacent_cells(self, vert_split_point_index):
+    result = []
+    for cell in self.cells:
+      if cell.col_end == vert_split_point_index:
+        result.append(cell)
+    return result
+
+  def _get_right_adjacent_cells(self, vert_split_point_index):
+    result = []
+    for cell in self.cells:
+      if cell.col_start == vert_split_point_index + 1:
+        result.append(cell)
+    return result
+
+  def _get_top_adjacent_cells(self, horz_split_point_index):
+    result = []
+    for cell in self.cells:
+      if cell.row_end == horz_split_point_index:
+        result.append(cell)
+    return result
+
+  def _get_bottom_adjacent_cells(self, horz_split_point_index):
+    result = []
+    for cell in self.cells:
+      if cell.row_start == horz_split_point_index + 1:
+        result.append(cell)
+    return result
 

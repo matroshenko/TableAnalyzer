@@ -160,6 +160,7 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
       cell.col_start -= min_col_start
       cell.col_end -= min_col_start
 
+
 Rect = namedtuple('Rect', ['left', 'top', 'right', 'bottom'])
 
 
@@ -193,7 +194,7 @@ class Table(object):
         max(cell.rect.bottom - self.rect.top for cell in top_adjacent_cells), 
         min(cell.rect.top - self.rect.top for cell in bottom_adjacent_cells) + 1
       )
-      self._set_values_in_interval(split_point_interval, result)
+      result[split_point_interval[0] : split_point_interval[1]] = True
 
       split_point_index += 1
 
@@ -214,15 +215,11 @@ class Table(object):
         max(cell.rect.right - self.rect.left for cell in left_adjacent_cells), 
         min(cell.rect.left - self.rect.left for cell in right_adjacent_cells) + 1
       )
-      self._set_values_in_interval(split_point_interval, result)
+      result[split_point_interval[0] : split_point_interval[1]] = True
 
       split_point_index += 1
 
     return result
-
-  def _set_values_in_interval(self, interval, mask):
-    for i in range(interval[0], interval[1]):
-      mask[i] = True
 
   def _get_left_adjacent_cells(self, vert_split_point_index):
     result = []

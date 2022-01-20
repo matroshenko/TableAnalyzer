@@ -1,4 +1,4 @@
-"""ICDAR dataset."""
+"""ICDAR 2013 table recognition dataset."""
 
 from collections import namedtuple
 import tensorflow_datasets as tfds
@@ -9,6 +9,8 @@ import io
 import os
 import glob
 import pathlib
+import tensorflow as tf
+import numpy as np
 
 # TODO(ICDAR): Markdown description  that will appear on the catalog page.
 _DESCRIPTION = """
@@ -29,9 +31,10 @@ _FILES_TO_IGNORE = [
 class Icdar(tfds.core.GeneratorBasedBuilder):
   """DatasetBuilder for ICDAR dataset."""
 
-  VERSION = tfds.core.Version('1.0.0')
+  VERSION = tfds.core.Version('1.0.1')
   RELEASE_NOTES = {
       '1.0.0': 'Initial release.',
+      '1.0.1': 'Replaced splits images with one dimensional mask.'
   }
 
   def _info(self) -> tfds.core.DatasetInfo:
@@ -43,8 +46,8 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
         features=tfds.features.FeaturesDict({
             # These are the features of your dataset like images, labels ...
             'image': tfds.features.Image(shape=(None, None, 3)),
-            'horz_split_points': tfds.features.Image(shape=(None, None, 1)),
-            'vert_split_points': tfds.features.Image(shape=(None, None, 1))
+            'horz_split_points_mask': tfds.features.Tensor(shape=(None,), dtype=tf.bool),
+            'vert_split_points_mask': tfds.features.Tensor(shape=(None,), dtype=tf.bool)
         }),
         homepage='https://www.tamirhassan.com/html/dataset.html',
         citation=_CITATION,
@@ -78,15 +81,15 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
         key = '{}-{}'.format(stem, table.id)
         page = pages[page_number]
         table_image = page.crop(table.rect)
-        horz_split_points_image = table.create_horz_split_points_image()
-        vert_split_points_image = table.create_vert_split_points_image()
+        horz_split_points_mask = table.create_horz_split_points_mask()
+        vert_split_points_mask = table.create_vert_split_points_mask()
         # Uncomment to debug
         # debug_file_name = '{}-{}.png'.format(stem, table.id)
-        # self._dump_debug_image(debug_file_name, table_image, horz_split_points_image, vert_split_points_image)
+        # self._dump_debug_image(debug_file_name, table_image, horz_split_points_mask, vert_split_points_mask)
         yield key, {
           'image': self._image_to_byte_array(table_image),
-          'horz_split_points': self._image_to_byte_array(horz_split_points_image),
-          'vert_split_points': self._image_to_byte_array(vert_split_points_image)
+          'horz_split_points_mask': horz_split_points_mask,
+          'vert_split_points_mask': vert_split_points_mask
         }
 
   def _generate_tables(self, page_height, region_file_path, structure_file_path):
@@ -131,21 +134,20 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     imgByteArr = imgByteArr.getvalue()
     return imgByteArr
 
-  def _dump_debug_image(self, file_name, table_image, horz_split_points_image, vert_split_points_image):
-    split_points_image = self._get_split_points_image(horz_split_points_image, vert_split_points_image)
+  def _dump_debug_image(self, file_name, table_image, horz_split_points_mask, vert_split_points_mask):
+    split_points_image = self._create_split_points_image(horz_split_points_mask, vert_split_points_mask)
     blended_image = PIL.Image.blend(table_image, split_points_image, 0.5)
     blended_image.save(file_name)
 
-  def _get_split_points_image(self, first, second):
-    assert first.size == second.size
-    assert first.mode == second.mode
-    result = PIL.Image.new('RGB', first.size)
-    first_pixels = first.load()
-    second_pixels = second.load()
+  def _create_split_points_image(self, horz_split_points_mask, vert_split_points_mask):
+    height = len(horz_split_points_mask)
+    width = len(vert_split_points_mask)
+    result = PIL.Image.new('RGB', (width, height))
     result_pixels = result.load()
-    for i in range(result.size[0]):
-      for j in range(result.size[1]):
-        result_pixels[i, j] = (max(first_pixels[i, j], second_pixels[i, j]), 0, 0)
+    for x in range(result.size[0]):
+      for y in range(result.size[1]):
+        if horz_split_points_mask[y] or vert_split_points_mask[x]:
+          result_pixels[x, y] = (255, 0, 0)
     return result
 
   def _fix_grid_coordinates(self, cells):
@@ -176,10 +178,9 @@ class Table(object):
     self.rect = rect
     self.cells = cells
 
-  def create_horz_split_points_image(self):
-    width = self.rect.right - self.rect.left
+  def create_horz_split_points_mask(self):
     height = self.rect.bottom - self.rect.top
-    result = PIL.Image.new('L', (width, height))
+    result = np.zeros(shape=(height,), dtype=np.bool)
 
     split_point_index = 0
     while True:
@@ -192,16 +193,15 @@ class Table(object):
         max(cell.rect.bottom - self.rect.top for cell in top_adjacent_cells), 
         min(cell.rect.top - self.rect.top for cell in bottom_adjacent_cells) + 1
       )
-      self._draw_horz_white_strip(split_point_interval, result)
+      self._set_values_in_interval(split_point_interval, result)
 
       split_point_index += 1
 
     return result
 
-  def create_vert_split_points_image(self):
+  def create_vert_split_points_mask(self):
     width = self.rect.right - self.rect.left
-    height = self.rect.bottom - self.rect.top
-    result = PIL.Image.new('L', (width, height))
+    result = np.zeros(shape=(width,), dtype=np.bool)
 
     split_point_index = 0
     while True:
@@ -214,23 +214,15 @@ class Table(object):
         max(cell.rect.right - self.rect.left for cell in left_adjacent_cells), 
         min(cell.rect.left - self.rect.left for cell in right_adjacent_cells) + 1
       )
-      self._draw_vert_white_strip(split_point_interval, result)
+      self._set_values_in_interval(split_point_interval, result)
 
       split_point_index += 1
 
     return result
 
-  def _draw_vert_white_strip(self, interval, image):
-    pixels = image.load()
-    for i in range(image.height):
-      for j in range(interval[0], interval[1]):
-        pixels[j, i] = 255
-
-  def _draw_horz_white_strip(self, interval, image):
-    pixels = image.load()
+  def _set_values_in_interval(self, interval, mask):
     for i in range(interval[0], interval[1]):
-      for j in range(image.width):
-        pixels[j, i] = 255
+      mask[i] = True
 
   def _get_left_adjacent_cells(self, vert_split_point_index):
     result = []

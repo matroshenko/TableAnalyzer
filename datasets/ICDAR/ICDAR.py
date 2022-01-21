@@ -25,7 +25,8 @@ _CITATION = """
 """
 
 _FILES_TO_IGNORE = [
-  'eu-015'  # GT cells lie outside page rect
+  'eu-015',  # cells lie outside page rect
+  'us-035a',  # 2nd table has invalid cell coords
 ]
 
 def create_debug_image(table_image, horz_split_points_mask, vert_split_points_mask):

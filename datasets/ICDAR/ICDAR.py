@@ -88,13 +88,13 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
       structure_file_path = pdf_file_path.with_name(stem + '-str.xml')
 
       pages = pdf2image.convert_from_path(pdf_file_path, dpi=72)
-      for page_number, table in self._generate_tables(pages[0].height, region_file_path, structure_file_path):
+      for page_number, table in self._generate_tables(pages, region_file_path, structure_file_path):
         key = '{}-{}'.format(stem, table.id)
         page = pages[page_number]
         table_image = page.crop(table.rect)
         horz_split_points_mask = table.create_horz_split_points_mask()
         vert_split_points_mask = table.create_vert_split_points_mask()
-        # Uncomment to debug
+        # Uncomment to save debug images
         # debug_image = create_debug_image(table_image, horz_split_points_mask, vert_split_points_mask)
         # debug_image.save(key + '.png')
         yield key, {
@@ -103,36 +103,37 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
           'vert_split_points_mask': vert_split_points_mask
         }
 
-  def _generate_tables(self, page_height, region_file_path, structure_file_path):
+  def _generate_tables(self, pages, region_file_path, structure_file_path):
     regions_tree = ET.parse(region_file_path)
     structures_tree = ET.parse(structure_file_path)
     for table_node, table_structure_node in zip(regions_tree.getroot(), structures_tree.getroot()):
       table_id = int(table_node.get('id'))
       region_node = table_node.find('region')
       page_number = int(region_node.get('page')) - 1
-      table_rect = self._get_bounding_box(page_height, region_node)
+      page_width, page_height = pages[page_number].size
+      table_rect = self._get_bounding_box(page_width, page_height, region_node)
       cells_node = table_structure_node.find('region')
-      cells = [self._get_cell(page_height, node) for node in cells_node]
+      cells = [self._get_cell(page_width, page_height, node) for node in cells_node]
       self._fix_grid_coordinates(cells)
 
       yield page_number, Table(table_id, table_rect, cells)
 
-  def _get_bounding_box(self, page_height, xml_node):
+  def _get_bounding_box(self, page_width, page_height, xml_node):
     bounding_box_node = xml_node.find('bounding-box')
     left = self._to_int(bounding_box_node.get('x1'))
     top = page_height - self._to_int(bounding_box_node.get('y2'))
-    assert top >= 0
     right = self._to_int(bounding_box_node.get('x2'))
     bottom = page_height - self._to_int(bounding_box_node.get('y1'))
-    assert bottom >= 0
+    assert 0 <= left and left < right and right <= page_width
+    assert 0 <= top and top < bottom and bottom <= page_height
     return Rect(left, top, right, bottom)
 
   def _to_int(self, str):
     result = str.replace('ß', '6')
     return int(result)
 
-  def _get_cell(self, page_height, xml_node):
-    rect = self._get_bounding_box(page_height, xml_node)
+  def _get_cell(self, page_width, page_height, xml_node):
+    rect = self._get_bounding_box(page_width, page_height, xml_node)
     col_start = int(xml_node.get('start-col'))
     col_end = int(xml_node.get('end-col', col_start))
     row_start = int(xml_node.get('start-row'))

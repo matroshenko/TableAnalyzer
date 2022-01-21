@@ -115,7 +115,6 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
       table_rect = self._get_bounding_box(page_width, page_height, region_node)
       cells_node = table_structure_node.find('region')
       cells = [self._get_cell(page_width, page_height, node) for node in cells_node]
-      self._fix_grid_coordinates(cells)
 
       yield page_number, Table(table_id, table_rect, cells)
 
@@ -147,16 +146,6 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     imgByteArr = imgByteArr.getvalue()
     return imgByteArr
 
-  def _fix_grid_coordinates(self, cells):
-    assert cells
-    min_row_start = min(cell.row_start for cell in cells)
-    min_col_start = min(cell.col_start for cell in cells)
-    for cell in cells:
-      cell.row_start -= min_row_start
-      cell.row_end -= min_row_start
-      cell.col_start -= min_col_start
-      cell.col_end -= min_col_start
-
 
 Rect = namedtuple('Rect', ['left', 'top', 'right', 'bottom'])
 
@@ -180,20 +169,20 @@ class Table(object):
     height = self.rect.bottom - self.rect.top
     result = np.zeros(shape=(height,), dtype=np.bool)
 
-    split_point_index = 0
-    while True:
+    split_point_indexes = self._get_horz_split_points_indexes()
+    assert len(split_point_indexes) >= 2
+    # Iterate only internal split point indexes.
+    for i in range(1, len(split_point_indexes)-1):
+      split_point_index = split_point_indexes[i]
       top_adjacent_cells = self._get_top_adjacent_cells(split_point_index)
       bottom_adjacent_cells = self._get_bottom_adjacent_cells(split_point_index)
-      if not bottom_adjacent_cells:
-        break
       assert top_adjacent_cells
+      assert bottom_adjacent_cells
       split_point_interval = (
         max(cell.rect.bottom - self.rect.top for cell in top_adjacent_cells), 
         min(cell.rect.top - self.rect.top for cell in bottom_adjacent_cells) + 1
       )
       result[split_point_interval[0] : split_point_interval[1]] = True
-
-      split_point_index += 1
 
     return result
 
@@ -201,22 +190,36 @@ class Table(object):
     width = self.rect.right - self.rect.left
     result = np.zeros(shape=(width,), dtype=np.bool)
 
-    split_point_index = 0
-    while True:
+    split_point_indexes = self._get_vert_split_points_indexes()
+    assert len(split_point_indexes) >= 2
+    # Iterate only internal split point indexes.
+    for i in range(1, len(split_point_indexes)-1):
+      split_point_index = split_point_indexes[i]
       left_adjacent_cells = self._get_left_adjacent_cells(split_point_index)
       right_adjacent_cells = self._get_right_adjacent_cells(split_point_index)
-      if not right_adjacent_cells:
-        break
       assert left_adjacent_cells
+      assert right_adjacent_cells
       split_point_interval = (
         max(cell.rect.right - self.rect.left for cell in left_adjacent_cells), 
         min(cell.rect.left - self.rect.left for cell in right_adjacent_cells) + 1
       )
       result[split_point_interval[0] : split_point_interval[1]] = True
 
-      split_point_index += 1
-
     return result
+
+  def _get_horz_split_points_indexes(self):
+    result = set()
+    for cell in self.cells:
+      result.add(cell.row_start-1)
+      result.add(cell.row_end)
+    return sorted(result)
+
+  def _get_vert_split_points_indexes(self):
+    result = set()
+    for cell in self.cells:
+      result.add(cell.col_start-1)
+      result.add(cell.col_end)
+    return sorted(result)
 
   def _get_left_adjacent_cells(self, vert_split_point_index):
     result = []
@@ -237,12 +240,28 @@ class Table(object):
     for cell in self.cells:
       if cell.row_end == horz_split_point_index:
         result.append(cell)
+    if result:
+      return result
+
+    # For lower explicit horz split point of the double split point
+    # there will be no adjacent cells.
+    for cell in self.cells:
+      if cell.row_end == horz_split_point_index - 1:
+        result.append(cell)
     return result
 
   def _get_bottom_adjacent_cells(self, horz_split_point_index):
     result = []
     for cell in self.cells:
       if cell.row_start == horz_split_point_index + 1:
+        result.append(cell)
+    if result:
+      return result
+
+    # For upper explicit horz split point of the double split point
+    # there will be no adjacent cells.
+    for cell in self.cells:
+      if cell.row_start == horz_split_point_index + 2:
         result.append(cell)
     return result
 

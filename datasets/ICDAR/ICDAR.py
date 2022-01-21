@@ -28,6 +28,17 @@ _FILES_TO_IGNORE = [
   'eu-015'  # GT cells lie outside page rect
 ]
 
+def create_debug_image(table_image, horz_split_points_mask, vert_split_points_mask):
+    height = len(horz_split_points_mask)
+    width = len(vert_split_points_mask)
+    split_points_image = PIL.Image.new('RGB', (width, height))
+    pixels = split_points_image.load()
+    for x in range(width):
+      for y in range(height):
+        if horz_split_points_mask[y] or vert_split_points_mask[x]:
+          pixels[x, y] = (255, 0, 0)
+    return PIL.Image.blend(table_image, split_points_image, 0.5)
+
 class Icdar(tfds.core.GeneratorBasedBuilder):
   """DatasetBuilder for ICDAR dataset."""
 
@@ -84,8 +95,8 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
         horz_split_points_mask = table.create_horz_split_points_mask()
         vert_split_points_mask = table.create_vert_split_points_mask()
         # Uncomment to debug
-        # debug_file_name = '{}-{}.png'.format(stem, table.id)
-        # self._dump_debug_image(debug_file_name, table_image, horz_split_points_mask, vert_split_points_mask)
+        # debug_image = create_debug_image(table_image, horz_split_points_mask, vert_split_points_mask)
+        # debug_image.save(key + '.png')
         yield key, {
           'image': self._image_to_byte_array(table_image),
           'horz_split_points_mask': horz_split_points_mask,
@@ -133,22 +144,6 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     image.save(imgByteArr, format='png')
     imgByteArr = imgByteArr.getvalue()
     return imgByteArr
-
-  def _dump_debug_image(self, file_name, table_image, horz_split_points_mask, vert_split_points_mask):
-    split_points_image = self._create_split_points_image(horz_split_points_mask, vert_split_points_mask)
-    blended_image = PIL.Image.blend(table_image, split_points_image, 0.5)
-    blended_image.save(file_name)
-
-  def _create_split_points_image(self, horz_split_points_mask, vert_split_points_mask):
-    height = len(horz_split_points_mask)
-    width = len(vert_split_points_mask)
-    result = PIL.Image.new('RGB', (width, height))
-    result_pixels = result.load()
-    for x in range(result.size[0]):
-      for y in range(result.size[1]):
-        if horz_split_points_mask[y] or vert_split_points_mask[x]:
-          result_pixels[x, y] = (255, 0, 0)
-    return result
 
   def _fix_grid_coordinates(self, cells):
     assert cells

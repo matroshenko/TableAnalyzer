@@ -1,3 +1,3 @@
 """ICDAR dataset."""
 
-from .ICDAR import Icdar
+from .ICDAR import *

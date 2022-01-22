@@ -1,3 +1,3 @@
 """ICDAR dataset."""
 
-from .ICDAR import *
+from .ICDAR import Icdar, create_debug_image

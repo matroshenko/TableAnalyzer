@@ -38,6 +38,7 @@ class ProjectionNetworkBlock(keras.layers.Layer):
         self._lower_branch_proj = ProjectionLayer(direction, True)
         if should_output_predictions:
             self._prediction_layer = ProjectionLayer(direction, False)
+            self._flatten_layer = keras.layers.Flatten()
         self._concat2 = keras.layers.Concatenate()
 
     def call(self, input):
@@ -53,6 +54,7 @@ class ProjectionNetworkBlock(keras.layers.Layer):
         lower_result = self._lower_branch_conv(middle_result)
         if self._should_output_predictions:
             predictions = self._prediction_layer(lower_result)
+            predictions = self._flatten_layer(predictions)
         lower_result = self._lower_branch_proj(lower_result)
 
         result = self._concat2([upper_result, middle_result, lower_result])
@@ -70,6 +72,7 @@ class ProjectionNetworkFinalBlock(keras.layers.Layer):
         self._concat = keras.layers.Concatenate()
         self._conv1x1 = keras.layers.Conv2D(1, 1, activation='sigmoid')
         self._prediction_layer = ProjectionLayer(direction, False)
+        self._flatten_layer = keras.layers.Flatten()
 
     def call(self, input):
         result = self._concat(
@@ -77,6 +80,7 @@ class ProjectionNetworkFinalBlock(keras.layers.Layer):
         )
         result = self._conv1x1(result)
         result = self._prediction_layer(result)
+        result = self._flatten_layer(result)
         return result
 
 

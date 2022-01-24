@@ -6,6 +6,7 @@ class BinarizeLayer(keras.layers.Layer):
     """Binarize input probabilities via graph-cut algorithm."""
     def __init__(self, gc_lambda=0.75):
         super().__init__(trainable=False)
+        assert gc_lambda >= 0
         self.gc_lambda = gc_lambda
 
     def call(self, inputs):

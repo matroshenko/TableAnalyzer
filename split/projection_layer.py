@@ -15,6 +15,7 @@ class ProjectionLayer(keras.layers.Layer):
 
     def call(self, input):
         num_of_dims = len(input.shape)
+        # Tensor could be without batch size dimension.
         assert num_of_dims in (3, 4)
         axis = num_of_dims - 2 if self._direction == ProjectionDirection.Height else num_of_dims - 3
         result = tf.reduce_mean(input, axis=axis, keepdims=True)

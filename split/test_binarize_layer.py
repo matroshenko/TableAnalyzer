@@ -31,4 +31,4 @@ class BinarizeLayerTestCase(TestCase):
 
 
 if __name__ == '__main__':
-    main()
+    main(module='test_binarize_layer')

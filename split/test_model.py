@@ -14,19 +14,24 @@ class ModelTestCase(TestCase):
             'image_height': height,
             'image_width': width
         }
-        (horz_split_points_probs1, horz_split_points_probs2, 
-        horz_split_points_probs3, horz_split_points_binary,
-        vert_split_points_probs1, vert_split_points_probs2, 
-        vert_split_points_probs3, vert_split_points_binary) = m(inputs)
+        outputs = m(inputs)
 
-        self.assertEqual(horz_split_points_probs1.shape, (batch_size, height))
-        self.assertEqual(horz_split_points_probs2.shape, (batch_size, height))
-        self.assertEqual(horz_split_points_probs3.shape, (batch_size, height,))
-        self.assertEqual(horz_split_points_binary.shape, (batch_size, height,))
-        self.assertEqual(vert_split_points_probs1.shape, (batch_size, width))
-        self.assertEqual(vert_split_points_probs2.shape, (batch_size, width))
-        self.assertEqual(vert_split_points_probs3.shape, (batch_size, width))
-        self.assertEqual(vert_split_points_binary.shape, (batch_size, width))
+        self.assertEqual(
+            outputs['horz_split_points_probs1'].shape, (batch_size, height))
+        self.assertEqual(
+            outputs['horz_split_points_probs2'].shape, (batch_size, height))
+        self.assertEqual(
+            outputs['horz_split_points_probs3'].shape, (batch_size, height,))
+        self.assertEqual(
+            outputs['horz_split_points_binary'].shape, (batch_size, height,))
+        self.assertEqual(
+            outputs['vert_split_points_probs1'].shape, (batch_size, width))
+        self.assertEqual(
+            outputs['vert_split_points_probs2'].shape, (batch_size, width))
+        self.assertEqual(
+            outputs['vert_split_points_probs3'].shape, (batch_size, width))
+        self.assertEqual(
+            outputs['vert_split_points_binary'].shape, (batch_size, width))
 
 if __name__ == '__main__':
     main()

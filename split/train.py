@@ -26,11 +26,15 @@ def get_metrics_dict():
     }
 
 def convert_ds_element_to_tuple(element):
-    table_image = element['image']
+    image = element['image']
     horz_split_points_mask = element['horz_split_points_mask']
     vert_split_points_mask = element['vert_split_points_mask']
     return (
-        table_image,
+        {
+            'image': image,
+            'image_height': tf.size(horz_split_points_mask),
+            'image_width': tf.size(vert_split_points_mask)
+        },
         {
             'horz_split_points_probs1': horz_split_points_mask,
             'horz_split_points_probs2': horz_split_points_mask,
@@ -66,7 +70,7 @@ def main(args):
         keras.optimizers.Adam(lr_schedule), 
         loss=get_losses_dict(), 
         loss_weights=[0.1, 0.25, 1, 0.1, 0.25, 1],
-        metrics=get_metrics_dict())
+        metrics=get_metrics_dict(), run_eagerly=True)
 
     ds_train, ds_test = tfds.load(
         'ICDAR',

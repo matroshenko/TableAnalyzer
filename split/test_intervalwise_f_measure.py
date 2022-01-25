@@ -11,5 +11,13 @@ class IntervalwiseFMeasureTestCase(TestCase):
 
         self.assertEqual(metric.result(), 2/3)
 
+    def test_large_input(self):
+        shape = (1, 100)
+        tf.random.set_seed(42)
+        markup_mask = tf.random.uniform(shape, 0, 2, dtype='int32')
+        predicted_mask = tf.random.uniform(shape, 0, 2, dtype='int32')
+        metric = IntervalwiseFMeasure()
+        metric.update_state(markup_mask, predicted_mask)
+
 if __name__ == '__main__':
     main()

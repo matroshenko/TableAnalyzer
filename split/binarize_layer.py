@@ -14,14 +14,21 @@ class BinarizeLayer(keras.layers.Layer):
         self.gc_lambda = gc_lambda
 
     def call(self, probs):
-        probs = probs.numpy()
+        assert(tf.rank(probs) == 2)
+        batch_size = probs.shape[0]
+        result = []
+        for i in range(batch_size):
+            result.append(self._binarize_vector(probs[i].numpy()))
+        return tf.constant(result, dtype=tf.int32)
+
+    def _binarize_vector(self, probs):
         graph, source, sink = self._create_graph(probs)
         reachable_nodes, _ = graph.st_mincut(source, sink, 'capacity')
         reachable_nodes.remove(source)
-        result = [0] * len(probs)
+        result = np.zeros(probs.shape, dtype='int32')
         for node in reachable_nodes:
             result[node-1] = 1
-        return tf.constant(result, dtype=tf.int32)
+        return result
 
     def _create_graph(self, probs):
         n = len(probs)

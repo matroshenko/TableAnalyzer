@@ -96,8 +96,8 @@ class ProjectionNetworkFinalBlock(keras.layers.Layer):
 
 
 class ProjectionNetwork(keras.layers.Layer):
-    def __init__(self, direction):
-        super().__init__()
+    def __init__(self, direction, name):
+        super().__init__(name=name)
         self._direction = direction
         self._block1 = ProjectionNetworkBlock(direction, True, False)
         self._block2 = ProjectionNetworkBlock(direction, True, False)
@@ -131,8 +131,8 @@ class Model(keras.models.Model):
         self._normalize_image_layer = keras.layers.experimental.preprocessing.Rescaling(
             scale=1./255)
         self._sfcn = SharedFullyConvolutionalNetwork()
-        self._rpn = ProjectionNetwork(ProjectionDirection.Height)
-        self._cpn = ProjectionNetwork(ProjectionDirection.Width)
+        self._rpn = ProjectionNetwork(ProjectionDirection.Height, 'RPN')
+        self._cpn = ProjectionNetwork(ProjectionDirection.Width, 'CPN')
         self._binarize_horz_splits_layer = BinarizeLayer(0.75)
         self._binarize_vert_splits_layer = BinarizeLayer(0.75)
 

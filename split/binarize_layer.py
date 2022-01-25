@@ -8,8 +8,8 @@ def get_capacity(value):
 
 class BinarizeLayer(keras.layers.Layer):
     """Binarize input probabilities via graph-cut algorithm."""
-    def __init__(self, gc_lambda=0.75):
-        super().__init__(trainable=False)
+    def __init__(self, gc_lambda, name=None):
+        super().__init__(trainable=False, name=name)
         assert gc_lambda >= 0
         self.gc_lambda = gc_lambda
 

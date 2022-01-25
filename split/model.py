@@ -106,7 +106,7 @@ class ProjectionNetwork(keras.layers.Layer):
 class Model(keras.models.Model):
     def __init__(self):
         super().__init__()
-        self._normalize_image_layer = keras.layers.Lambda(lambda x: tf.cast(x, 'float32') / 255)
+        self._normalize_image_layer = keras.layers.experimental.preprocessing.Rescaling(scale=1./255)
         self._sfcn = SharedFullyConvolutionalNetwork()
         self._rpn = ProjectionNetwork(ProjectionDirection.Height)
         self._cpn = ProjectionNetwork(ProjectionDirection.Width)

@@ -105,11 +105,13 @@ class ProjectionNetwork(keras.layers.Layer):
 class Model(keras.models.Model):
     def __init__(self):
         super().__init__()
+        self._normalize_image_layer = keras.layers.Lambda(lambda x: tf.cast(x, 'float32') / 255)
         self._sfcn = SharedFullyConvolutionalNetwork()
         self._rpn = ProjectionNetwork(ProjectionDirection.Height)
         self._cpn = ProjectionNetwork(ProjectionDirection.Width)
 
     def call(self, input):
+        input = self._normalize_image_layer(input)
         sfcn_output = self._sfcn(input)
         horz_split_points_probs1, horz_split_points_probs2, horz_split_points_probs3 = self._rpn(sfcn_output)
         vert_split_points_probs1, vert_split_points_probs2, vert_split_points_probs3 = self._cpn(sfcn_output)

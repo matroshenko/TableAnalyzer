@@ -7,7 +7,7 @@ class ModelTestCase(TestCase):
         batch_size = 1
         height = 200
         width = 1000
-        random_image = tf.random.uniform(shape=(batch_size, height, width, 3), minval=0, maxval=256, dtype='float32', seed=42)
+        random_image = tf.random.uniform(shape=(batch_size, height, width, 3), minval=0, maxval=256, dtype='int32', seed=42)
         m = Model()
         (horz_split_points_probs1, horz_split_points_probs2, horz_split_points_probs3,
             vert_split_points_probs1, vert_split_points_probs2, vert_split_points_probs3) = m(random_image)

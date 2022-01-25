@@ -24,13 +24,16 @@ class IntervalwiseFMeasure(keras.metrics.Metric):
         self.matched_intervals_count = self.add_weight('matched_intervals_count', initializer='zeros', dtype='int32')
 
     def update_state(self, markup_mask, predicted_mask, sample_weight=None):
-        markup_intervals = self._get_intervals_of_ones(markup_mask)
-        predicted_intervals = self._get_intervals_of_ones(predicted_mask)
-        matching_size = self._calculate_matching_size(markup_intervals, predicted_intervals)
+        assert len(markup_mask.shape) == 2
+        assert len(predicted_mask.shape) == 2
+        for markup_mask_element, predicted_mask_element in zip(markup_mask, predicted_mask):
+            markup_intervals = self._get_intervals_of_ones(markup_mask_element)
+            predicted_intervals = self._get_intervals_of_ones(predicted_mask_element)
+            matching_size = self._calculate_matching_size(markup_intervals, predicted_intervals)
 
-        self.markup_intervals_count.assign_add(len(markup_intervals))
-        self.predicted_intervals_count.assign_add(len(predicted_intervals))
-        self.matched_intervals_count.assign_add(matching_size)
+            self.markup_intervals_count.assign_add(len(markup_intervals))
+            self.predicted_intervals_count.assign_add(len(predicted_intervals))
+            self.matched_intervals_count.assign_add(matching_size)
 
     def result(self):
         if self.matched_intervals_count == 0:
@@ -47,7 +50,7 @@ class IntervalwiseFMeasure(keras.metrics.Metric):
         current_inteval_start = None
         is_inside_interval = False
         for i in range(len(mask)):
-            if mask[i] == 1:
+            if mask[i].numpy() == 1:
                 if not is_inside_interval:
                     current_inteval_start = i
                     is_inside_interval = True

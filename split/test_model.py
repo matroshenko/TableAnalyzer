@@ -12,7 +12,7 @@ class ModelTestCase(TestCase):
         (horz_split_points_probs1, horz_split_points_probs2, 
         horz_split_points_probs3, horz_split_points_binary,
         vert_split_points_probs1, vert_split_points_probs2, 
-        vert_split_points_probs3, vert_split_points_binary) = m(random_image)
+        vert_split_points_probs3, vert_split_points_binary) = m(random_image, height, width)
 
         self.assertEqual(horz_split_points_probs1.shape, (batch_size, height))
         self.assertEqual(horz_split_points_probs2.shape, (batch_size, height))

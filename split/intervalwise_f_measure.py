@@ -1,6 +1,5 @@
 import tensorflow.keras as keras
-import networkx as nx
-from networkx.algorithms import bipartite
+import igraph
 
 class Interval(object):
     def __init__(self, start, end):
@@ -66,20 +65,19 @@ class IntervalwiseFMeasure(keras.metrics.Metric):
 
     @staticmethod
     def _calculate_matching_size(first_intervals_list, second_intervals_list):
-        graph = nx.Graph()
+        graph = igraph.Graph()
         n = len(first_intervals_list)
         m = len(second_intervals_list)
-        for i in range(n):
-            graph.add_node(i, bipartite=0)
-        for i in range(m):
-            graph.add_node(n+i, bipartite=1)
+        graph.add_vertices(n + m, attributes={'type': [0] * n + [1] * m})
+
+        edges = []
         for i, interval1 in enumerate(first_intervals_list):
             for j, interval2 in enumerate(second_intervals_list):
                 intersection_length = Interval.get_intersection_length(interval1, interval2)
                 min_length = min(interval1.get_length(), interval2.get_length())
                 assert min_length > 0
                 if intersection_length / min_length > 0.5:
-                    graph.add_edge(i, n+j)
-        matching_dict = bipartite.maximum_matching(graph, top_nodes=list(range(n)))
-        assert len(matching_dict) % 2 == 0
-        return len(matching_dict) // 2
+                    edges.append((i, n+j))
+        graph.add_edges(edges)
+        matching = graph.maximum_bipartite_matching()
+        return len(matching)

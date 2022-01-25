@@ -1,8 +1,17 @@
 from unittest import TestCase, main
+import time
+
 from intervalwise_f_measure import IntervalwiseFMeasure
 import tensorflow as tf
 
 class IntervalwiseFMeasureTestCase(TestCase):
+    def setUp(self):
+        self.startTime = time.time()
+
+    def tearDown(self):
+        t = time.time() - self.startTime
+        print('%s: %.3f' % (self.id(), t))
+
     def test_simple(self):
         markup_mask = tf.constant([[0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0]])
         predicted_mask = tf.constant([[0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1]])
@@ -20,4 +29,4 @@ class IntervalwiseFMeasureTestCase(TestCase):
         metric.update_state(markup_mask, predicted_mask)
 
 if __name__ == '__main__':
-    main()
+    main(module='test_intervalwise_f_measure')

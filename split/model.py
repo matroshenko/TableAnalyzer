@@ -128,7 +128,8 @@ class ProjectionNetwork(keras.layers.Layer):
 class Model(keras.models.Model):
     def __init__(self):
         super().__init__()
-        self._normalize_image_layer = keras.layers.experimental.preprocessing.Rescaling(scale=1./255)
+        self._normalize_image_layer = keras.layers.experimental.preprocessing.Rescaling(
+            scale=1./255)
         self._sfcn = SharedFullyConvolutionalNetwork()
         self._rpn = ProjectionNetwork(
             ProjectionDirection.Height, 
@@ -139,7 +140,10 @@ class Model(keras.models.Model):
         self._binarize_horz_splits_layer = BinarizeLayer(0.75, 'horz_split_points_binary')
         self._binarize_vert_splits_layer = BinarizeLayer(0.75, 'vert_split_points_binary')
 
-    def call(self, input, input_height, input_width):
+    def call(self, inputs):
+        input = inputs['image']
+        input_height = inputs['image_height']
+        input_width = inputs['image_width']
         input = self._normalize_image_layer(input)
         sfcn_output = self._sfcn(input)
         horz_split_points_probs1, horz_split_points_probs2, horz_split_points_probs3 = self._rpn(

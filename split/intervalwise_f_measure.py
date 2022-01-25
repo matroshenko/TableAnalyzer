@@ -17,8 +17,8 @@ class Interval(object):
 
 
 class IntervalwiseFMeasure(keras.metrics.Metric):
-    def __init__(self, name='intervalwise_f_measure', **kwargs):
-        super().__init__(name=name, **kwargs)
+    def __init__(self, name=None):
+        super().__init__(name=name)
         self.markup_intervals_count = self.add_weight('markup_intervals_count', initializer='zeros', dtype='int32')
         self.predicted_intervals_count = self.add_weight('predicted_intervals_count', initializer='zeros', dtype='int32')
         self.matched_intervals_count = self.add_weight('matched_intervals_count', initializer='zeros', dtype='int32')

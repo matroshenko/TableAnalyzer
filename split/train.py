@@ -19,6 +19,16 @@ def get_losses_dict():
         'vert_split_points_probs3': keras.losses.BinaryCrossentropy(from_logits=False),
     }
 
+def get_losses_weights():
+    return {
+        'horz_split_points_probs1': 0.1,
+        'horz_split_points_probs2': 0.25,
+        'horz_split_points_probs3': 1,
+        'vert_split_points_probs1': 0.1,
+        'vert_split_points_probs2': 0.25,
+        'vert_split_points_probs3': 1,
+    }
+
 def get_metrics_dict():
     return {
         'horz_split_points_binary': IntervalwiseFMeasure(),
@@ -69,7 +79,7 @@ def main(args):
     model.compile(
         keras.optimizers.Adam(lr_schedule), 
         loss=get_losses_dict(), 
-        loss_weights=[0.1, 0.25, 1, 0.1, 0.25, 1],
+        loss_weights=get_losses_weights(),
         metrics=get_metrics_dict(), run_eagerly=True)
 
     ds_train, ds_test = tfds.load(

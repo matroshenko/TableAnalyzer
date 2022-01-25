@@ -13,12 +13,14 @@ class ProjectionLayer(keras.layers.Layer):
         self._direction = direction
         self._broadcast_to_original_shape = broadcast_to_original_shape
 
-    def call(self, input):
+    def call(self, input, input_height, input_width):
         num_of_dims = len(input.shape)
-        # Tensor could be without batch size dimension.
-        assert num_of_dims in (3, 4)
-        axis = num_of_dims - 2 if self._direction == ProjectionDirection.Height else num_of_dims - 3
+        assert num_of_dims == 4
+        axis = 2 if self._direction == ProjectionDirection.Height else 1
         result = tf.reduce_mean(input, axis=axis, keepdims=True)
         if self._broadcast_to_original_shape:
-            result = tf.broadcast_to(result, input.shape)
+            if self._direction == ProjectionDirection.Height:
+                result = tf.repeat(result, input_width, axis)
+            else:
+                result = tf.repeat(result, input_height, axis)
         return result

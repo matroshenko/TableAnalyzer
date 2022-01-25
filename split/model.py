@@ -2,6 +2,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 
 from projection_layer import ProjectionLayer, ProjectionDirection
+from binarize_layer import BinarizeLayer
 
 class SharedFullyConvolutionalNetwork(keras.layers.Layer):
     def __init__(self):
@@ -109,13 +110,17 @@ class Model(keras.models.Model):
         self._sfcn = SharedFullyConvolutionalNetwork()
         self._rpn = ProjectionNetwork(ProjectionDirection.Height)
         self._cpn = ProjectionNetwork(ProjectionDirection.Width)
+        self._binarize_horz_splits_layer = BinarizeLayer()
+        self._binarize_vert_splits_layer = BinarizeLayer()
 
     def call(self, input):
         input = self._normalize_image_layer(input)
         sfcn_output = self._sfcn(input)
         horz_split_points_probs1, horz_split_points_probs2, horz_split_points_probs3 = self._rpn(sfcn_output)
         vert_split_points_probs1, vert_split_points_probs2, vert_split_points_probs3 = self._cpn(sfcn_output)
+        horz_split_points_binary = self._binarize_horz_splits_layer(horz_split_points_probs3)
+        vert_split_points_binary = self._binarize_horz_splits_layer(vert_split_points_probs3)
         return (
-            horz_split_points_probs1, horz_split_points_probs2, horz_split_points_probs3,
-            vert_split_points_probs1, vert_split_points_probs2, vert_split_points_probs3
+            horz_split_points_probs1, horz_split_points_probs2, horz_split_points_probs3, horz_split_points_binary,
+            vert_split_points_probs1, vert_split_points_probs2, vert_split_points_probs3, vert_split_points_binary
         )

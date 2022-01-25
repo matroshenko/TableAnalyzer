@@ -1,10 +1,59 @@
 import argparse
+from enum import Enum
 
+import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow_datasets as tfds
 
-import datasets.ICDAR
+#import datasets.ICDAR
 from model import Model
+from intervalwise_f_measure import IntervalwiseFMeasure
+
+def get_losses_dict():
+    return {
+        'horz_split_points_probs1': keras.losses.BinaryCrossentropy(from_logits=False),
+        'horz_split_points_probs2': keras.losses.BinaryCrossentropy(from_logits=False),
+        'horz_split_points_probs3': keras.losses.BinaryCrossentropy(from_logits=False),
+        'vert_split_points_probs1': keras.losses.BinaryCrossentropy(from_logits=False),
+        'vert_split_points_probs2': keras.losses.BinaryCrossentropy(from_logits=False),
+        'vert_split_points_probs3': keras.losses.BinaryCrossentropy(from_logits=False),
+    }
+
+def get_metrics_dict():
+    return {
+        'horz_split_points_binary': IntervalwiseFMeasure(),
+        'vert_split_points_binary': IntervalwiseFMeasure(),
+    }
+
+def convert_ds_element_to_tuple(element):
+    table_image = element['image']
+    horz_split_points_mask = element['horz_split_points_mask']
+    vert_split_points_mask = element['vert_split_points_mask']
+    return (
+        table_image,
+        {
+            'horz_split_points_probs1': horz_split_points_mask,
+            'horz_split_points_probs2': horz_split_points_mask,
+            'horz_split_points_probs3': horz_split_points_mask,
+            'horz_split_points_binary': horz_split_points_mask,
+            'vert_split_points_probs1': vert_split_points_mask,
+            'vert_split_points_probs2': vert_split_points_mask,
+            'vert_split_points_probs3': vert_split_points_mask,    
+            'vert_split_points_binary': vert_split_points_mask   
+        }
+    )
+
+class Target(Enum):
+    Train = 0,
+    Test = 1
+
+def build_data_pipeline(ds, target):
+    ds = ds.map(convert_ds_element_to_tuple)
+    if target == Target.Train:
+        ds = ds.shuffle(128, seed=42)
+    ds = ds.batch(1)
+    ds = ds.prefetch(tf.data.AUTOTUNE)
+    return ds
 
 def main(args):
     model = Model()
@@ -15,15 +64,19 @@ def main(args):
         staircase=True)
     model.compile(
         keras.optimizers.Adam(lr_schedule), 
-        loss=[keras.losses.BinaryCrossentropy(from_logits=False) for _ in range(6)], 
-        loss_weights=[0.1, 0.25, 1, 0.1, 0.25, 1])
-    (ds_train, ds_test), ds_info = tfds.load(
+        loss=get_losses_dict(), 
+        loss_weights=[0.1, 0.25, 1, 0.1, 0.25, 1],
+        metrics=get_metrics_dict())
+
+    ds_train, ds_test = tfds.load(
         'ICDAR',
-        split=['train[:90%]', 'train[90%:]'],
-        with_info=True
+        split=['train[:90%]', 'train[90%:]']
     )
-    
-    
+    ds_train = build_data_pipeline(ds_train, Target.Train)
+    ds_test = build_data_pipeline(ds_test, Target.Test)
+
+    model.fit(ds_train, epochs=1, validation_data=ds_test)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Trains SPLIT model.")

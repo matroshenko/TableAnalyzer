@@ -23,7 +23,7 @@ class IntervalwiseFMeasure(keras.metrics.Metric):
         self.predicted_intervals_count = self.add_weight('predicted_intervals_count', initializer='zeros', dtype='int32')
         self.matched_intervals_count = self.add_weight('matched_intervals_count', initializer='zeros', dtype='int32')
 
-    def update_state(self, markup_mask, predicted_mask):
+    def update_state(self, markup_mask, predicted_mask, sample_weight=None):
         markup_intervals = self._get_intervals_of_ones(markup_mask)
         predicted_intervals = self._get_intervals_of_ones(predicted_mask)
         matching_size = self._calculate_matching_size(markup_intervals, predicted_intervals)

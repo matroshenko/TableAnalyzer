@@ -21,7 +21,7 @@ class SharedFullyConvolutionalNetwork(keras.layers.Layer):
 
 
 class ProjectionNetworkBlock(keras.layers.Layer):
-    def __init__(self, direction, should_reduce_size, should_output_predictions):
+    def __init__(self, direction, should_reduce_size, should_output_predictions, ouput_name):
         super().__init__()
         self._should_reduce_size = should_reduce_size
         self._should_output_predictions = should_output_predictions
@@ -39,7 +39,7 @@ class ProjectionNetworkBlock(keras.layers.Layer):
         self._lower_branch_proj = ProjectionLayer(direction, True)
         if should_output_predictions:
             self._prediction_layer = ProjectionLayer(direction, False)
-            self._flatten_layer = keras.layers.Flatten()
+            self._flatten_layer = keras.layers.Flatten(name=ouput_name)
         self._concat2 = keras.layers.Concatenate()
 
     def call(self, input):
@@ -65,7 +65,7 @@ class ProjectionNetworkBlock(keras.layers.Layer):
 
 
 class ProjectionNetworkFinalBlock(keras.layers.Layer):
-    def __init__(self, direction):
+    def __init__(self, direction, output_name):
         super().__init__()
         self._dilated_conv1 = keras.layers.Conv2D(6, 3, padding='same', activation='relu', dilation_rate=2)
         self._dilated_conv2 = keras.layers.Conv2D(6, 3, padding='same', activation='relu', dilation_rate=3)
@@ -73,7 +73,7 @@ class ProjectionNetworkFinalBlock(keras.layers.Layer):
         self._concat = keras.layers.Concatenate()
         self._conv1x1 = keras.layers.Conv2D(1, 1, activation='sigmoid')
         self._prediction_layer = ProjectionLayer(direction, False)
-        self._flatten_layer = keras.layers.Flatten()
+        self._flatten_layer = keras.layers.Flatten(name=output_name)
 
     def call(self, input):
         result = self._concat(
@@ -86,21 +86,21 @@ class ProjectionNetworkFinalBlock(keras.layers.Layer):
 
 
 class ProjectionNetwork(keras.layers.Layer):
-    def __init__(self, direction):
+    def __init__(self, direction, output_name1, output_name2, output_name3):
         super().__init__()
-        self._block1 = ProjectionNetworkBlock(direction, True, False)
-        self._block2 = ProjectionNetworkBlock(direction, True, False)
-        self._block3 = ProjectionNetworkBlock(direction, True, True)
-        self._block4 = ProjectionNetworkBlock(direction, False, True)
-        self._block5 = ProjectionNetworkFinalBlock(direction)
+        self._block1 = ProjectionNetworkBlock(direction, True, False, None)
+        self._block2 = ProjectionNetworkBlock(direction, True, False, None)
+        self._block3 = ProjectionNetworkBlock(direction, True, True, output_name1)
+        self._block4 = ProjectionNetworkBlock(direction, False, True, output_name2)
+        self._block5 = ProjectionNetworkFinalBlock(direction, output_name3)
 
     def call(self, x):
         x = self._block1(x)
         x = self._block2(x)
-        x, predictions1 = self._block3(x)
-        x, predictions2 = self._block4(x)
-        predictions3 = self._block5(x)
-        return predictions1, predictions2, predictions3
+        x, probs1 = self._block3(x)
+        x, probs2 = self._block4(x)
+        probs3 = self._block5(x)
+        return probs1, probs2, probs3
 
 
 class Model(keras.models.Model):
@@ -108,10 +108,14 @@ class Model(keras.models.Model):
         super().__init__()
         self._normalize_image_layer = keras.layers.experimental.preprocessing.Rescaling(scale=1./255)
         self._sfcn = SharedFullyConvolutionalNetwork()
-        self._rpn = ProjectionNetwork(ProjectionDirection.Height)
-        self._cpn = ProjectionNetwork(ProjectionDirection.Width)
-        self._binarize_horz_splits_layer = BinarizeLayer()
-        self._binarize_vert_splits_layer = BinarizeLayer()
+        self._rpn = ProjectionNetwork(
+            ProjectionDirection.Height, 
+            'horz_split_points_probs1', 'horz_split_points_probs2', 'horz_split_points_probs3')
+        self._cpn = ProjectionNetwork(
+            ProjectionDirection.Width, 
+            'vert_split_points_probs1', 'vert_split_points_probs2', 'vert_split_points_probs3')
+        self._binarize_horz_splits_layer = BinarizeLayer(0.75, 'horz_split_points_binary')
+        self._binarize_vert_splits_layer = BinarizeLayer(0.75, 'vert_split_points_binary')
 
     def call(self, input):
         input = self._normalize_image_layer(input)

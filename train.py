@@ -1,5 +1,6 @@
 import argparse
 from enum import Enum
+from datetime import datetime
 import os
 # Say tensorflow not to show information messages (warnings and errors will be shown).
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1' 
@@ -76,6 +77,12 @@ def build_data_pipeline(ds, target, max_samples_count):
     ds = ds.prefetch(tf.data.AUTOTUNE)
     return ds
 
+def get_tensorboard_callback():
+    now = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    root_logdir = '/tmp/tf_logs'
+    logdir = '{}/run-{}/'.format(root_logdir, now)
+    return tf.keras.callbacks.TensorBoard(log_dir=logdir)
+
 def main(args):
     # For reproducible results.
     tf.random.set_seed(42)
@@ -105,7 +112,9 @@ def main(args):
     ds_train = build_data_pipeline(ds_train, Target.Train, args.max_samples_count)
     ds_test = build_data_pipeline(ds_test, Target.Test, args.max_samples_count)
 
-    model.fit(ds_train, epochs=args.epochs_count, validation_data=ds_test)
+    model.fit(
+        ds_train, epochs=args.epochs_count, validation_data=ds_test,
+        callbacks=[get_tensorboard_callback()])
     model.save_weights(args.result_file_path, save_format='h5')
 
 if __name__ == '__main__':

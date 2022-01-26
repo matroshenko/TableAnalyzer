@@ -1,5 +1,8 @@
 import argparse
 from enum import Enum
+import os
+# Say tensorflow not to show information messages (warnings and errors will be shown).
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1' 
 
 import tensorflow as tf
 import tensorflow.keras as keras

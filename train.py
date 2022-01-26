@@ -79,6 +79,8 @@ def build_data_pipeline(ds, target, max_samples_count):
 def main(args):
     # For reproducible results.
     tf.random.set_seed(42)
+    # For debugging it's better to see full stack trace.
+    tf.debugging.disable_traceback_filtering()
 
     model = Model()
     lr_schedule = keras.optimizers.schedules.ExponentialDecay(
@@ -104,7 +106,7 @@ def main(args):
     ds_test = build_data_pipeline(ds_test, Target.Test, args.max_samples_count)
 
     model.fit(ds_train, epochs=1, validation_data=ds_test)
-
+    model.save_weights(args.result_file_path, save_format='h5')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Trains SPLIT model.")

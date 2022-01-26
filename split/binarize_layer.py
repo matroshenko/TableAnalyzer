@@ -14,7 +14,7 @@ class BinarizeLayer(keras.layers.Layer):
         self.gc_lambda = gc_lambda
 
     def call(self, probs):
-        assert(tf.rank(probs) == 2)
+        assert(len(probs.shape) == 2)
         batch_size = probs.shape[0]
         result = []
         for i in range(batch_size):

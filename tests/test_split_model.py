@@ -1,6 +1,6 @@
 from unittest import TestCase, main
 import tensorflow as tf
-from model import Model
+from split.model import Model
 
 class ModelTestCase(TestCase):
     def test_output_shape(self):

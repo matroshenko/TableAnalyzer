@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from projection_layer import ProjectionLayer, ProjectionDirection
+from split.projection_layer import ProjectionDirection, ProjectionLayer
 import tensorflow as tf
 
 class ProjectionLayerTestCase(TestCase):

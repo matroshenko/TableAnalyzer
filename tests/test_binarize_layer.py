@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from binarize_layer import BinarizeLayer
+from split.binarize_layer import BinarizeLayer
 import tensorflow as tf
 import time
 
@@ -31,4 +31,4 @@ class BinarizeLayerTestCase(TestCase):
 
 
 if __name__ == '__main__':
-    main(module='test_binarize_layer')
+    main()

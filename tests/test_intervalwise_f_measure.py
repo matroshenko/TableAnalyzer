@@ -1,7 +1,7 @@
 from unittest import TestCase, main
 import time
 
-from intervalwise_f_measure import IntervalwiseFMeasure
+from split.intervalwise_f_measure import IntervalwiseFMeasure
 import tensorflow as tf
 
 class IntervalwiseFMeasureTestCase(TestCase):
@@ -29,4 +29,4 @@ class IntervalwiseFMeasureTestCase(TestCase):
         metric.update_state(markup_mask, predicted_mask)
 
 if __name__ == '__main__':
-    main(module='test_intervalwise_f_measure')
+    main()

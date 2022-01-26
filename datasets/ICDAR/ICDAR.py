@@ -63,7 +63,7 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
         }),
         homepage='https://www.tamirhassan.com/html/dataset.html',
         citation=_CITATION,
-        disable_shuffling=True
+        disable_shuffling=False
     )
 
   def _split_generators(self, dl_manager: tfds.download.DownloadManager):

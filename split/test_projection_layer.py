@@ -8,8 +8,6 @@ class ProjectionLayerTestCase(TestCase):
             [[1, 2], [3, 4], [5, 6]],
             [[7, 8], [9, 10], [11, 12]],
         ]], dtype = 'float32')
-        self.input_height = 2
-        self.input_width = 3
 
     def test_project_on_height_no_broadcast(self):
         expected_output = tf.constant([[
@@ -17,7 +15,7 @@ class ProjectionLayerTestCase(TestCase):
             [[9, 10]]
         ]], dtype = 'float32')
         layer = ProjectionLayer(ProjectionDirection.Height, False)
-        output = layer(self.input, self.input_height, self.input_width)
+        output = layer(self.input)
         self.assertTrue(tf.reduce_all(expected_output == output))
 
     def test_project_on_height_broadcast(self):
@@ -26,7 +24,7 @@ class ProjectionLayerTestCase(TestCase):
             [[9, 10], [9, 10], [9, 10]]
         ]], dtype = 'float32')
         layer = ProjectionLayer(ProjectionDirection.Height, True)
-        output = layer(self.input, self.input_height, self.input_width)
+        output = layer(self.input)
         self.assertTrue(tf.reduce_all(expected_output == output))
 
     def test_project_on_width_no_broadcast(self):
@@ -34,7 +32,7 @@ class ProjectionLayerTestCase(TestCase):
             [[4, 5], [6, 7], [8, 9]]
         ]], dtype = 'float32')
         layer = ProjectionLayer(ProjectionDirection.Width, False)
-        output = layer(self.input, self.input_height, self.input_width)
+        output = layer(self.input)
         self.assertTrue(tf.reduce_all(expected_output == output))
 
     def test_project_on_width_broadcast(self):
@@ -43,7 +41,7 @@ class ProjectionLayerTestCase(TestCase):
             [[4, 5], [6, 7], [8, 9]]
         ]], dtype = 'float32')
         layer = ProjectionLayer(ProjectionDirection.Width, True)
-        output = layer(self.input, self.input_height, self.input_width)
+        output = layer(self.input)
         self.assertTrue(tf.reduce_all(expected_output == output))
 
 if __name__ == '__main__':

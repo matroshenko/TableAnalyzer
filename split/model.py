@@ -5,12 +5,6 @@ from split.projection_layer import ProjectionLayer, ProjectionDirection
 from split.binarize_layer import BinarizeLayer
 
 
-def reduce_shape_by_half(direction, input_height, input_width):
-    if direction == ProjectionDirection.Height:
-        return input_height, tf.cast(tf.math.floor(input_width / 2), 'int32')
-    return tf.cast(tf.math.floor(input_height / 2), 'int32'), input_width
-
-
 class SharedFullyConvolutionalNetwork(keras.layers.Layer):
     def __init__(self):
         super().__init__()
@@ -50,23 +44,21 @@ class ProjectionNetworkBlock(keras.layers.Layer):
             self._flatten_layer = keras.layers.Flatten()
         self._concat2 = keras.layers.Concatenate()
 
-    def call(self, input, input_height, input_width):
+    def call(self, input):
         middle_result = self._concat1(
             [self._dilated_conv1(input), self._dilated_conv2(input), self._dilated_conv3(input)]
         )
         if self._should_reduce_size:
             middle_result = self._pooling(middle_result)
-            input_height, input_width = reduce_shape_by_half(
-                self._direction, input_height, input_width)
 
         upper_result = self._upper_branch_conv(middle_result)
-        upper_result = self._upper_branch_proj(upper_result, input_height, input_width)
+        upper_result = self._upper_branch_proj(upper_result)
 
         lower_result = self._lower_branch_conv(middle_result)
         if self._should_output_predictions:
-            predictions = self._prediction_layer(lower_result, input_height, input_width)
+            predictions = self._prediction_layer(lower_result)
             predictions = self._flatten_layer(predictions)
-        lower_result = self._lower_branch_proj(lower_result, input_height, input_width)
+        lower_result = self._lower_branch_proj(lower_result)
 
         result = self._concat2([upper_result, middle_result, lower_result])
         if self._should_output_predictions:
@@ -85,12 +77,12 @@ class ProjectionNetworkFinalBlock(keras.layers.Layer):
         self._prediction_layer = ProjectionLayer(direction, False)
         self._flatten_layer = keras.layers.Flatten()
 
-    def call(self, input, input_height, input_width):
+    def call(self, input):
         result = self._concat(
             [self._dilated_conv1(input), self._dilated_conv2(input), self._dilated_conv3(input)]
         )
         result = self._conv1x1(result)
-        result = self._prediction_layer(result, input_height, input_width)
+        result = self._prediction_layer(result)
         result = self._flatten_layer(result)
         return result
 
@@ -105,24 +97,12 @@ class ProjectionNetwork(keras.layers.Layer):
         self._block4 = ProjectionNetworkBlock(direction, False, True)
         self._block5 = ProjectionNetworkFinalBlock(direction)
 
-    def call(self, input, input_height, input_width):
-        block1_output = self._block1(input, input_height, input_width)
-        block1_output_height, block1_output_width = reduce_shape_by_half(
-            self._direction, input_height, input_width)
-
-        block2_output = self._block2(block1_output, block1_output_height, block1_output_width)
-        block2_output_height, block2_output_width = reduce_shape_by_half(
-            self._direction, block1_output_height, block1_output_width)
-
-        block3_output, probs1 = self._block3(block2_output, block2_output_height, block2_output_width)
-        block3_output_height, block3_output_width = reduce_shape_by_half(
-            self._direction, block2_output_height, block2_output_width)
-
-        block4_output, probs2 = self._block4(block3_output, block3_output_height, block3_output_width)
-        # block4 does not reduce shape
-        block4_output_height, block4_output_width = block3_output_height, block3_output_width
-
-        probs3 = self._block5(block4_output, block4_output_height, block4_output_width)
+    def call(self, input):
+        block1_output = self._block1(input)
+        block2_output = self._block2(block1_output)
+        block3_output, probs1 = self._block3(block2_output)
+        block4_output, probs2 = self._block4(block3_output)
+        probs3 = self._block5(block4_output)
         return probs1, probs2, probs3
 
 class Model(keras.models.Model):
@@ -136,16 +116,11 @@ class Model(keras.models.Model):
         self._binarize_horz_splits_layer = BinarizeLayer(0.75)
         self._binarize_vert_splits_layer = BinarizeLayer(0.75)
 
-    def call(self, inputs):
-        input = inputs['image']
-        input_height = inputs['image_height']
-        input_width = inputs['image_width']
+    def call(self, input):
         input = self._normalize_image_layer(input)
         sfcn_output = self._sfcn(input)
-        horz_split_points_probs1, horz_split_points_probs2, horz_split_points_probs3 = self._rpn(
-            sfcn_output, input_height, input_width)
-        vert_split_points_probs1, vert_split_points_probs2, vert_split_points_probs3 = self._cpn(
-            sfcn_output, input_height, input_width)
+        horz_split_points_probs1, horz_split_points_probs2, horz_split_points_probs3 = self._rpn(sfcn_output)
+        vert_split_points_probs1, vert_split_points_probs2, vert_split_points_probs3 = self._cpn(sfcn_output)
         horz_split_points_binary = self._binarize_horz_splits_layer(horz_split_points_probs3)
         vert_split_points_binary = self._binarize_horz_splits_layer(vert_split_points_probs3)
         return {

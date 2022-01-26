@@ -44,11 +44,7 @@ def convert_ds_element_to_tuple(element):
     horz_split_points_mask = element['horz_split_points_mask']
     vert_split_points_mask = element['vert_split_points_mask']
     return (
-        {
-            'image': image,
-            'image_height': tf.size(horz_split_points_mask),
-            'image_width': tf.size(vert_split_points_mask)
-        },
+        image,
         {
             'horz_split_points_probs1': horz_split_points_mask,
             'horz_split_points_probs2': horz_split_points_mask,

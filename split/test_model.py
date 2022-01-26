@@ -9,12 +9,7 @@ class ModelTestCase(TestCase):
         width = 1000
         random_image = tf.random.uniform(shape=(batch_size, height, width, 3), minval=0, maxval=256, dtype='int32', seed=42)
         m = Model()
-        inputs = {
-            'image': random_image,
-            'image_height': height,
-            'image_width': width
-        }
-        outputs = m(inputs)
+        outputs = m(random_image)
 
         self.assertEqual(
             outputs['horz_split_points_probs1'].shape, (batch_size, height))

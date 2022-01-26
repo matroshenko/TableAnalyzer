@@ -64,15 +64,22 @@ class Target(Enum):
     Train = 0,
     Test = 1
 
-def build_data_pipeline(ds, target):
+def build_data_pipeline(ds, target, max_samples_count):
+    if max_samples_count is not None:
+        assert max_samples_count > 0
+        ds = ds.take(max_samples_count)
+    
     ds = ds.map(convert_ds_element_to_tuple)
     if target == Target.Train:
-        ds = ds.shuffle(128, seed=42)
+        ds = ds.shuffle(128)
     ds = ds.batch(1)
     ds = ds.prefetch(tf.data.AUTOTUNE)
     return ds
 
 def main(args):
+    # For reproducible results.
+    tf.random.set_seed(42)
+
     model = Model()
     lr_schedule = keras.optimizers.schedules.ExponentialDecay(
         args.initial_learning_rate,
@@ -93,8 +100,8 @@ def main(args):
         'ICDAR',
         split=['train[:90%]', 'train[90%:]']
     )
-    ds_train = build_data_pipeline(ds_train, Target.Train)
-    ds_test = build_data_pipeline(ds_test, Target.Test)
+    ds_train = build_data_pipeline(ds_train, Target.Train, args.max_samples_count)
+    ds_test = build_data_pipeline(ds_test, Target.Test, args.max_samples_count)
 
     model.fit(ds_train, epochs=1, validation_data=ds_test)
 
@@ -103,4 +110,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Trains SPLIT model.")
     parser.add_argument('result_file_path', help='Path to the file, where trained model will be serialized.')
     parser.add_argument('--initial_learning_rate', default=0.00075, help='Initial value of learning rate.')
+    parser.add_argument('--max_samples_count', default=None, type=int, 
+        help='Max count of samples to train/test. May be used for debug purposes.')
     main(parser.parse_args())

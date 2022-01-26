@@ -105,12 +105,13 @@ def main(args):
     ds_train = build_data_pipeline(ds_train, Target.Train, args.max_samples_count)
     ds_test = build_data_pipeline(ds_test, Target.Test, args.max_samples_count)
 
-    model.fit(ds_train, epochs=1, validation_data=ds_test)
+    model.fit(ds_train, epochs=args.epochs_count, validation_data=ds_test)
     model.save_weights(args.result_file_path, save_format='h5')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Trains SPLIT model.")
     parser.add_argument('result_file_path', help='Path to the file, where trained model will be serialized.')
+    parser.add_argument('--epochs_count', default=10, type=int, help='Number of epochs to train.')
     parser.add_argument('--initial_learning_rate', default=0.00075, help='Initial value of learning rate.')
     parser.add_argument('--max_samples_count', default=None, type=int, 
         help='Max count of samples to train/test. May be used for debug purposes.')

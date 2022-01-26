@@ -1,8 +1,8 @@
 import tensorflow as tf
 import tensorflow.keras as keras
 
-from projection_layer import ProjectionLayer, ProjectionDirection
-from binarize_layer import BinarizeLayer
+from split.projection_layer import ProjectionLayer, ProjectionDirection
+from split.binarize_layer import BinarizeLayer
 
 
 def reduce_shape_by_half(direction, input_height, input_width):

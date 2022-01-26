@@ -5,9 +5,9 @@ import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow_datasets as tfds
 
-#import datasets.ICDAR
-from model import Model
-from intervalwise_f_measure import IntervalwiseFMeasure
+import datasets.ICDAR
+from split.model import Model
+from split.intervalwise_f_measure import IntervalwiseFMeasure
 
 def get_losses_dict():
     return {

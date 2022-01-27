@@ -1,4 +1,4 @@
-import PIL
+from PIL import Image, ImageDraw
 
 
 class Interval(object):
@@ -38,10 +38,13 @@ def get_intervals_of_ones(mask):
 def create_debug_image(table_image, horz_split_points_mask, vert_split_points_mask):
     height = len(horz_split_points_mask)
     width = len(vert_split_points_mask)
-    split_points_image = PIL.Image.new('RGB', (width, height))
-    pixels = split_points_image.load()
-    for x in range(width):
-      for y in range(height):
-        if horz_split_points_mask[y] or vert_split_points_mask[x]:
-          pixels[x, y] = (255, 0, 0)
-    return PIL.Image.blend(table_image, split_points_image, 0.5)
+    split_points_image = Image.new('RGB', (width, height))
+    draw = ImageDraw.Draw(split_points_image)
+
+    for interval in get_intervals_of_ones(horz_split_points_mask):
+        draw.rectangle((0, interval.start, width, interval.end), fill=(255, 0, 0))
+
+    for interval in get_intervals_of_ones(vert_split_points_mask):
+        draw.rectangle((interval.start, 0, interval.end, height), fill=(255, 0, 0))
+    
+    return Image.blend(table_image, split_points_image, 0.5)

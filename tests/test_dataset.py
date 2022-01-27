@@ -1,12 +1,14 @@
 """ICDAR dataset."""
 
 import tensorflow_datasets as tfds
-import ICDAR
+
+import context
+from datasets.ICDAR.ICDAR import Icdar
 
 
 class IcdarTest(tfds.testing.DatasetBuilderTestCase):
   """Tests for ICDAR dataset."""
-  DATASET_CLASS = ICDAR.Icdar
+  DATASET_CLASS = Icdar
   SPLITS = {
       'train': 15  # Number of fake train example
   }

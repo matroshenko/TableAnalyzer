@@ -1,5 +1,8 @@
 from unittest import TestCase, main
+
 import tensorflow as tf
+
+import context
 from split.model import Model
 
 class ModelTestCase(TestCase):

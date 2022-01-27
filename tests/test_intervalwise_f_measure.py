@@ -1,8 +1,9 @@
 from unittest import TestCase, main
 import time
-
-from split.intervalwise_f_measure import IntervalwiseFMeasure
 import tensorflow as tf
+
+import context
+from split.intervalwise_f_measure import IntervalwiseFMeasure
 
 class IntervalwiseFMeasureTestCase(TestCase):
     def setUp(self):

@@ -1,7 +1,10 @@
 from unittest import TestCase, main
-from split.binarize_layer import BinarizeLayer
-import tensorflow as tf
 import time
+
+import tensorflow as tf
+
+import context
+from split.binarize_layer import BinarizeLayer
 
 class BinarizeLayerTestCase(TestCase):
     def setUp(self):

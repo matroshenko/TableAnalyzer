@@ -1,6 +1,9 @@
 from unittest import TestCase, main
-from split.projection_layer import ProjectionDirection, ProjectionLayer
+
 import tensorflow as tf
+
+import context
+from split.projection_layer import ProjectionDirection, ProjectionLayer
 
 class ProjectionLayerTestCase(TestCase):
     def setUp(self):

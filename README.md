@@ -1,18 +1,22 @@
 # SPLERGE_via_TF
 Implementation of SPLERGE model for table structure recognition via TensorFlow. For reference please check original paper: 
+
 C. Tensmeyer, V. I. Morariu, B. Price, S. Cohen and T. Martinez, "Deep Splitting and Merging for Table Structure Decomposition," 2019 International Conference on Document Analysis and Recognition (ICDAR), 2019, pp. 114-121, doi: 10.1109/ICDAR.2019.00027.
 
 # Usage
+To train SPLIT model use script `train_split_model.py`. 
+Use `--help` argument to view usage info.
 
-train.py \<ModelType> \<Dataset> \<PathToResultModelFile>
+# Results
 
-* \<ModelType> -- type of model, should be SPLIT or MERGE.
-* \<Dataset> -- name of the training dataset. Currently only ICDAR dataset is supported.
-* \<PathToResultModelFile> -- location of the file, where result model should be serialized.
+I have trained SPLIT model on my machine (NVIDIA GeForce GTX 1080 Ti) for 100 epochs and obtained following results on validation set:
 
-predict.py \<PathToSplitModelFile> \<PathToMergeModelFile> \<PathToTestImage> \<PathToResultImage>
+|                   | Intervalwise F-score |
+| ----------------- | -------------------- |
+| Horz split points | 0.9668               |
+| Vert split points | 0.9600               |
 
-* \<PathToSplitModelFile> -- path to a previously trained SPLIT model file.
-* \<PathToMergeModelFile> -- path to a previously trained MERGE model file.
-* \<PathToTestImage> -- path to the file, containing image of a test table.
-* \<PathToResultImage> -- path to the file, where resulting image will be saved.
+# Images
+
+![](images/split_model_predictions.png)
+Fig 1. SPLIT model predictions blended with sample table images. 

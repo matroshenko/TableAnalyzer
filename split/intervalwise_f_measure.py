@@ -1,6 +1,7 @@
 import tensorflow.keras as keras
 import igraph
 
+
 class Interval(object):
     def __init__(self, start, end):
         assert start < end

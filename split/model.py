@@ -105,6 +105,7 @@ class ProjectionNetwork(keras.layers.Layer):
         probs3 = self._block5(block4_output)
         return probs1, probs2, probs3
 
+
 class Model(keras.models.Model):
     def __init__(self):
         super().__init__()

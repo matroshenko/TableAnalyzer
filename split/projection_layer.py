@@ -7,6 +7,7 @@ class ProjectionDirection(Enum):
     Height = 0
     Width = 1
 
+
 class ProjectionLayer(keras.layers.Layer):
     def __init__(self, direction, broadcast_to_original_shape):
         super().__init__()

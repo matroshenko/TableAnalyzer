@@ -3,8 +3,10 @@ from tensorflow import keras
 import numpy as np
 import igraph
 
+
 def get_capacity(value):
     return int(1024 * value)
+
 
 class BinarizeLayer(keras.layers.Layer):
     """Binarize input probabilities via graph-cut algorithm."""

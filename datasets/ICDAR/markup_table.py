@@ -12,12 +12,9 @@ class Rect(object):
 
 
 class Cell(object):
-  def __init__(self, rect, col_start, col_end, row_start, row_end):
-    self.rect = rect
-    self.col_start = col_start
-    self.col_end = col_end
-    self.row_start = row_start
-    self.row_end = row_end
+  def __init__(self, text_rect, grid_rect):
+    self.text_rect = text_rect
+    self.grid_rect = grid_rect
 
 
 class Table(object):
@@ -40,8 +37,8 @@ class Table(object):
       assert top_adjacent_cells
       assert bottom_adjacent_cells
       split_point_interval = (
-        max(cell.rect.bottom - self.rect.top for cell in top_adjacent_cells), 
-        min(cell.rect.top - self.rect.top for cell in bottom_adjacent_cells) + 1
+        max(cell.text_rect.bottom - self.rect.top for cell in top_adjacent_cells), 
+        min(cell.text_rect.top - self.rect.top for cell in bottom_adjacent_cells) + 1
       )
       result[split_point_interval[0] : split_point_interval[1]] = True
 
@@ -61,8 +58,8 @@ class Table(object):
       assert left_adjacent_cells
       assert right_adjacent_cells
       split_point_interval = (
-        max(cell.rect.right - self.rect.left for cell in left_adjacent_cells), 
-        min(cell.rect.left - self.rect.left for cell in right_adjacent_cells) + 1
+        max(cell.text_rect.right - self.rect.left for cell in left_adjacent_cells), 
+        min(cell.text_rect.left - self.rect.left for cell in right_adjacent_cells) + 1
       )
       result[split_point_interval[0] : split_point_interval[1]] = True
 
@@ -71,35 +68,35 @@ class Table(object):
   def _get_horz_split_points_indexes(self):
     result = set()
     for cell in self.cells:
-      result.add(cell.row_start-1)
-      result.add(cell.row_end)
+      result.add(cell.grid_rect.top)
+      result.add(cell.grid_rect.bottom)
     return sorted(result)
 
   def _get_vert_split_points_indexes(self):
     result = set()
     for cell in self.cells:
-      result.add(cell.col_start-1)
-      result.add(cell.col_end)
+      result.add(cell.grid_rect.left)
+      result.add(cell.grid_rect.right)
     return sorted(result)
 
   def _get_left_adjacent_cells(self, vert_split_point_index):
     result = []
     for cell in self.cells:
-      if cell.col_end == vert_split_point_index:
+      if cell.grid_rect.right == vert_split_point_index:
         result.append(cell)
     return result
 
   def _get_right_adjacent_cells(self, vert_split_point_index):
     result = []
     for cell in self.cells:
-      if cell.col_start == vert_split_point_index + 1:
+      if cell.grid_rect.left == vert_split_point_index:
         result.append(cell)
     return result
 
   def _get_top_adjacent_cells(self, horz_split_point_index):
     result = []
     for cell in self.cells:
-      if cell.row_end == horz_split_point_index:
+      if cell.grid_rect.bottom == horz_split_point_index:
         result.append(cell)
     if result:
       return result
@@ -107,14 +104,14 @@ class Table(object):
     # For lower explicit horz split point of the double split point
     # there will be no adjacent cells.
     for cell in self.cells:
-      if cell.row_end == horz_split_point_index - 1:
+      if cell.grid_rect.bottom == horz_split_point_index - 1:
         result.append(cell)
     return result
 
   def _get_bottom_adjacent_cells(self, horz_split_point_index):
     result = []
     for cell in self.cells:
-      if cell.row_start == horz_split_point_index + 1:
+      if cell.grid_rect.top == horz_split_point_index:
         result.append(cell)
     if result:
       return result
@@ -122,7 +119,7 @@ class Table(object):
     # For upper explicit horz split point of the double split point
     # there will be no adjacent cells.
     for cell in self.cells:
-      if cell.row_start == horz_split_point_index + 2:
+      if cell.grid_rect.top == horz_split_point_index + 1:
         result.append(cell)
     return result
 

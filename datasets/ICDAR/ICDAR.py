@@ -136,12 +136,13 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     return int(result)
 
   def _get_cell(self, page_width, page_height, xml_node):
-    rect = self._get_bounding_box(page_width, page_height, xml_node)
+    text_rect = self._get_bounding_box(page_width, page_height, xml_node)
     col_start = int(xml_node.get('start-col'))
     col_end = int(xml_node.get('end-col', col_start))
     row_start = int(xml_node.get('start-row'))
     row_end = int(xml_node.get('end-row', row_start))
-    return Cell(rect, col_start, col_end, row_start, row_end)
+    grid_rect = Rect(col_start, row_start, col_end + 1, row_end + 1)
+    return Cell(text_rect, grid_rect)
 
   def _image_to_byte_array(self, image):
     imgByteArr = io.BytesIO()

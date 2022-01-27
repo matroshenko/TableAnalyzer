@@ -1,19 +1,7 @@
 import tensorflow.keras as keras
 import igraph
 
-
-class Interval(object):
-    def __init__(self, start, end):
-        assert start < end
-        self.start = start
-        self.end = end
-
-    def get_length(self):
-        return self.end - self.start
-
-    @staticmethod
-    def get_intersection_length(first, second):
-        return max(0, min(first.end, second.end) - max(first.start, second.start))
+from utils import Interval, get_intervals_of_ones
 
 
 class IntervalwiseFMeasure(keras.metrics.Metric):
@@ -27,8 +15,8 @@ class IntervalwiseFMeasure(keras.metrics.Metric):
         assert len(markup_mask.shape) == 2
         assert len(predicted_mask.shape) == 2
         for markup_mask_element, predicted_mask_element in zip(markup_mask, predicted_mask):
-            markup_intervals = self._get_intervals_of_ones(markup_mask_element)
-            predicted_intervals = self._get_intervals_of_ones(predicted_mask_element)
+            markup_intervals = get_intervals_of_ones(markup_mask_element)
+            predicted_intervals = get_intervals_of_ones(predicted_mask_element)
             matching_size = self._calculate_matching_size(markup_intervals, predicted_intervals)
 
             self.markup_intervals_count.assign_add(len(markup_intervals))
@@ -43,26 +31,6 @@ class IntervalwiseFMeasure(keras.metrics.Metric):
         recall = self.matched_intervals_count / self.markup_intervals_count
         precision = self.matched_intervals_count / self.predicted_intervals_count
         return 2 * recall * precision / (recall + precision)
-
-    @staticmethod
-    def _get_intervals_of_ones(mask):
-        result = []
-        current_inteval_start = None
-        is_inside_interval = False
-        for i in range(len(mask)):
-            if mask[i].numpy() == 1:
-                if not is_inside_interval:
-                    current_inteval_start = i
-                    is_inside_interval = True
-            else:
-                if is_inside_interval:
-                    assert current_inteval_start is not None
-                    result.append(Interval(current_inteval_start, i))
-                    is_inside_interval = False
-        if is_inside_interval:
-            assert current_inteval_start is not None
-            result.append(Interval(current_inteval_start, len(mask)))
-        return result
 
     @staticmethod
     def _calculate_matching_size(first_intervals_list, second_intervals_list):

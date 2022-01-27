@@ -5,7 +5,7 @@ C. Tensmeyer, V. I. Morariu, B. Price, S. Cohen and T. Martinez, "Deep Splitting
 
 # Usage
 To train SPLIT model use script `train_split_model.py`. 
-Use `--help` argument to view usage info.
+Run with `--help` argument to view usage info.
 
 # Results
 

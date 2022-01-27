@@ -31,17 +31,6 @@ _FILES_TO_IGNORE = [
   'us-035a',  # 2nd table has invalid cell coords
 ]
 
-def create_debug_image(table_image, horz_split_points_mask, vert_split_points_mask):
-    height = len(horz_split_points_mask)
-    width = len(vert_split_points_mask)
-    split_points_image = PIL.Image.new('RGB', (width, height))
-    pixels = split_points_image.load()
-    for x in range(width):
-      for y in range(height):
-        if horz_split_points_mask[y] or vert_split_points_mask[x]:
-          pixels[x, y] = (255, 0, 0)
-    return PIL.Image.blend(table_image, split_points_image, 0.5)
-
 
 class Icdar(tfds.core.GeneratorBasedBuilder):
   """DatasetBuilder for ICDAR dataset."""
@@ -98,9 +87,6 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
         table_image = page.crop(table.rect.as_tuple())
         horz_split_points_mask = table.create_horz_split_points_mask()
         vert_split_points_mask = table.create_vert_split_points_mask()
-        # Uncomment to save debug images
-        # debug_image = create_debug_image(table_image, horz_split_points_mask, vert_split_points_mask)
-        # debug_image.save(key + '.png')
         yield key, {
           'image': self._image_to_byte_array(table_image),
           'horz_split_points_mask': horz_split_points_mask,

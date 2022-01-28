@@ -11,7 +11,8 @@ import tensorflow as tf
 import pdf2image
 import PIL
 
-from datasets.ICDAR.markup_table import Rect, Cell, Table
+from datasets.ICDAR.markup_table import Cell, Table
+from datasets.ICDAR.rect import Rect
 
 
 # TODO(ICDAR): Markdown description  that will appear on the catalog page.

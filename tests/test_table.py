@@ -3,7 +3,9 @@ from unittest import TestCase, main
 import numpy as np
 
 import context
-from datasets.ICDAR.markup_table import Rect, Cell, Table
+from datasets.ICDAR.rect import Rect
+from datasets.ICDAR.markup_table import Cell, Table
+from datasets.ICDAR.grid import Grid
 
 
 class TableTest(TestCase):
@@ -45,6 +47,26 @@ class TableTest(TestCase):
         expected_mask = np.array(
             [0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0], dtype=np.bool)
         self.assertTrue(np.all(mask == expected_mask))
+
+    def test_merge_masks(self):
+        grid = Grid([1, 3, 5, 7, 9, 12], [2, 7, 11, 15, 19])
+        merge_right_mask, merge_down_mask = self._table.create_merge_masks(grid)
+
+        expected_merge_right_mask = [
+            [False, True, True],
+            [False, False, False],
+            [False, False, False],
+            [False, False, False],
+            [False, False, False]
+        ]
+        expected_merge_down_mask = [
+            [True, False, False, False],
+            [False, False, False, False],
+            [False, False, False, False],
+            [False, False, False, False],
+        ]
+        self.assertTrue(np.all(merge_right_mask == expected_merge_right_mask))
+        self.assertTrue(np.all(merge_down_mask == expected_merge_down_mask))
 
 
 if __name__ == '__main__':

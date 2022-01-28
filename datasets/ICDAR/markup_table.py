@@ -1,17 +1,7 @@
 import numpy as np
 
 from utils import Interval
-
-
-class Rect(object):
-  def __init__(self, left, top, right, bottom):
-    self.left = left
-    self.top = top
-    self.right = right
-    self.bottom = bottom
-
-  def as_tuple(self):
-    return (self.left, self.top, self.right, self.bottom)
+from datasets.ICDAR.rect import Rect
 
 
 class Cell(object):
@@ -28,6 +18,7 @@ class Table(object):
 
   def create_horz_split_points_mask(self):
     height = self.rect.bottom - self.rect.top
+    shift = self.rect.top
     result = np.zeros(shape=(height,), dtype=np.bool)
 
     split_point_indexes = self._get_horz_split_points_indexes()
@@ -36,12 +27,13 @@ class Table(object):
     for i in range(1, len(split_point_indexes)-1):
       split_point_index = split_point_indexes[i]
       interval = self._get_horz_split_point_interval(split_point_index)
-      result[interval.start : interval.end] = True
+      result[interval.start - shift : interval.end - shift] = True
 
     return result
 
   def create_vert_split_points_mask(self):
     width = self.rect.right - self.rect.left
+    shift = self.rect.left
     result = np.zeros(shape=(width,), dtype=np.bool)
 
     split_point_indexes = self._get_vert_split_points_indexes()
@@ -50,9 +42,35 @@ class Table(object):
     for i in range(1, len(split_point_indexes)-1):
       split_point_index = split_point_indexes[i]
       interval = self._get_vert_split_point_interval(split_point_index)
-      result[interval.start : interval.end] = True
+      result[interval.start - shift : interval.end - shift] = True
 
     return result
+
+  def create_merge_masks(self, grid):
+    assert self.rect == grid.get_bounding_rect()
+
+    n = grid.get_rows_count()
+    m = grid.get_cols_count()
+    merge_right_mask = np.zeros(shape=(n, m-1), dtype=np.bool)
+    merge_down_mask = np.zeros(shape=(n-1, m), dtype=np.bool)
+
+    for cell in self.cells:
+      outer_rect = self._calculate_outer_rect(cell)
+      for i in range(n):
+        for j in range(m):
+          if not outer_rect.contains(grid.get_cell_rect(i, j)):
+            continue
+
+          if j+1 < m and outer_rect.contains(grid.get_cell_rect(i, j+1)):
+            merge_right_mask[i][j] = True
+            
+          if i+1 < n and outer_rect.contains(grid.get_cell_rect(i+1, j)):
+            merge_down_mask[i][j] = True
+
+    return merge_right_mask, merge_down_mask
+
+  def create_merge_down_mask(self, grid):
+    pass
 
   def _get_horz_split_points_indexes(self):
     result = set()
@@ -107,9 +125,9 @@ class Table(object):
     start = None
     end = None
     if top_adjacent_cells:
-      start = max(cell.text_rect.bottom - self.rect.top for cell in top_adjacent_cells)
+      start = max(cell.text_rect.bottom for cell in top_adjacent_cells)
     if bottom_adjacent_cells:
-      end = min(cell.text_rect.top - self.rect.top for cell in bottom_adjacent_cells)
+      end = min(cell.text_rect.top for cell in bottom_adjacent_cells)
     if start is None:
       assert end is not None
       start = end - 1
@@ -128,8 +146,8 @@ class Table(object):
     assert left_adjacent_cells
     assert right_adjacent_cells
 
-    start = max(cell.text_rect.right - self.rect.left for cell in left_adjacent_cells)
-    end = min(cell.text_rect.left - self.rect.left for cell in right_adjacent_cells)
+    start = max(cell.text_rect.right for cell in left_adjacent_cells)
+    end = min(cell.text_rect.left for cell in right_adjacent_cells)
     
     if end <= start:
       # In this case we suppose, that interval has length=1.
@@ -137,3 +155,15 @@ class Table(object):
 
     return Interval(start, end)
 
+  def _calculate_outer_rect(self, cell):
+    table_rect = self.rect
+    rows_count = len(self._get_horz_split_points_indexes()) - 1
+    cols_count = len(self._get_vert_split_points_indexes()) - 1
+
+    grid_rect = cell.grid_rect
+    left = self._get_vert_split_point_interval(grid_rect.left).start if grid_rect.left > 0 else table_rect.left
+    top = self._get_horz_split_point_interval(grid_rect.top).start if grid_rect.top > 0 else table_rect.top
+    right = self._get_vert_split_point_interval(grid_rect.right).end if grid_rect.right < cols_count else table_rect.right
+    bottom = self._get_horz_split_point_interval(grid_rect.bottom).end if grid_rect.bottom < rows_count else table_rect.bottom
+
+    return Rect(left, top, right, bottom)

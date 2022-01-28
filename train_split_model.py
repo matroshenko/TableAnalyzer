@@ -6,7 +6,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow_datasets as tfds
 
-import datasets.ICDAR
+from datasets.ICDAR.ICDAR import Icdar
 from split.model import Model
 from split.intervalwise_f_measure import IntervalwiseFMeasure
 

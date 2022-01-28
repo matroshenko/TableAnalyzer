@@ -46,3 +46,9 @@ class Grid(object):
             self._v_positions[-1],
             self._h_positions[-1]
         )
+
+    def __eq__(self, other):
+        return (
+            self._h_positions == other._h_positions 
+            and self._v_positions == other._v_positions
+        )

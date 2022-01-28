@@ -5,6 +5,12 @@ class Rect(object):
     self.right = right
     self.bottom = bottom
 
+  def get_width(self):
+    return self.right - self.left
+
+  def get_height(self):
+    return self.bottom - self.top
+
   def as_tuple(self):
     return (self.left, self.top, self.right, self.bottom)
 

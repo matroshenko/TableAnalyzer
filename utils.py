@@ -38,7 +38,7 @@ def get_intervals_of_ones(mask):
 def create_debug_image(table_image, horz_split_points_mask, vert_split_points_mask):
     height = len(horz_split_points_mask)
     width = len(vert_split_points_mask)
-    split_points_image = Image.new('RGB', (width, height))
+    split_points_image = table_image.copy()
     draw = ImageDraw.Draw(split_points_image)
 
     for interval in get_intervals_of_ones(horz_split_points_mask):

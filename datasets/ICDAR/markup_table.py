@@ -4,14 +4,14 @@ from utils import Interval
 
 
 class Rect(object):
-    def __init__(self, left, top, right, bottom):
-        self.left = left
-        self.top = top
-        self.right = right
-        self.bottom = bottom
+  def __init__(self, left, top, right, bottom):
+    self.left = left
+    self.top = top
+    self.right = right
+    self.bottom = bottom
 
-    def as_tuple(self):
-        return (self.left, self.top, self.right, self.bottom)
+  def as_tuple(self):
+    return (self.left, self.top, self.right, self.bottom)
 
 
 class Cell(object):
@@ -109,13 +109,16 @@ class Table(object):
     if top_adjacent_cells:
       start = max(cell.text_rect.bottom - self.rect.top for cell in top_adjacent_cells)
     if bottom_adjacent_cells:
-      end = min(cell.text_rect.top - self.rect.top for cell in bottom_adjacent_cells) + 1
+      end = min(cell.text_rect.top - self.rect.top for cell in bottom_adjacent_cells)
     if start is None:
       assert end is not None
       start = end - 1
     if end is None:
       assert start is not None
       end = start + 1
+    if end <= start:
+      # In this case we suppose, that interval has length=1.
+      end = start+1
 
     return Interval(start, end)
 
@@ -124,8 +127,13 @@ class Table(object):
     right_adjacent_cells = self._get_right_adjacent_cells(split_point_index)
     assert left_adjacent_cells
     assert right_adjacent_cells
-    return Interval(
-      max(cell.text_rect.right - self.rect.left for cell in left_adjacent_cells), 
-      min(cell.text_rect.left - self.rect.left for cell in right_adjacent_cells) + 1
-    )
+
+    start = max(cell.text_rect.right - self.rect.left for cell in left_adjacent_cells)
+    end = min(cell.text_rect.left - self.rect.left for cell in right_adjacent_cells)
+    
+    if end <= start:
+      # In this case we suppose, that interval has length=1.
+      end = start + 1
+
+    return Interval(start, end)
 

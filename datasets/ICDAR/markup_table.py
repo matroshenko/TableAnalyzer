@@ -1,5 +1,8 @@
 import numpy as np
 
+from utils import Interval
+
+
 class Rect(object):
     def __init__(self, left, top, right, bottom):
         self.left = left
@@ -32,15 +35,8 @@ class Table(object):
     # Iterate only internal split point indexes.
     for i in range(1, len(split_point_indexes)-1):
       split_point_index = split_point_indexes[i]
-      top_adjacent_cells = self._get_top_adjacent_cells(split_point_index)
-      bottom_adjacent_cells = self._get_bottom_adjacent_cells(split_point_index)
-      assert top_adjacent_cells
-      assert bottom_adjacent_cells
-      split_point_interval = (
-        max(cell.text_rect.bottom - self.rect.top for cell in top_adjacent_cells), 
-        min(cell.text_rect.top - self.rect.top for cell in bottom_adjacent_cells) + 1
-      )
-      result[split_point_interval[0] : split_point_interval[1]] = True
+      interval = self._get_horz_split_point_interval(split_point_index)
+      result[interval.start : interval.end] = True
 
     return result
 
@@ -53,15 +49,8 @@ class Table(object):
     # Iterate only internal split point indexes.
     for i in range(1, len(split_point_indexes)-1):
       split_point_index = split_point_indexes[i]
-      left_adjacent_cells = self._get_left_adjacent_cells(split_point_index)
-      right_adjacent_cells = self._get_right_adjacent_cells(split_point_index)
-      assert left_adjacent_cells
-      assert right_adjacent_cells
-      split_point_interval = (
-        max(cell.text_rect.right - self.rect.left for cell in left_adjacent_cells), 
-        min(cell.text_rect.left - self.rect.left for cell in right_adjacent_cells) + 1
-      )
-      result[split_point_interval[0] : split_point_interval[1]] = True
+      interval = self._get_vert_split_point_interval(split_point_index)
+      result[interval.start : interval.end] = True
 
     return result
 
@@ -98,14 +87,6 @@ class Table(object):
     for cell in self.cells:
       if cell.grid_rect.bottom == horz_split_point_index:
         result.append(cell)
-    if result:
-      return result
-
-    # For lower explicit horz split point of the double split point
-    # there will be no adjacent cells.
-    for cell in self.cells:
-      if cell.grid_rect.bottom == horz_split_point_index - 1:
-        result.append(cell)
     return result
 
   def _get_bottom_adjacent_cells(self, horz_split_point_index):
@@ -113,13 +94,38 @@ class Table(object):
     for cell in self.cells:
       if cell.grid_rect.top == horz_split_point_index:
         result.append(cell)
-    if result:
-      return result
-
-    # For upper explicit horz split point of the double split point
-    # there will be no adjacent cells.
-    for cell in self.cells:
-      if cell.grid_rect.top == horz_split_point_index + 1:
-        result.append(cell)
     return result
+
+  def _get_horz_split_point_interval(self, split_point_index):
+    top_adjacent_cells = self._get_top_adjacent_cells(split_point_index)
+    bottom_adjacent_cells = self._get_bottom_adjacent_cells(split_point_index)
+
+    # Adjacent row could be empty (empty cells are not stored).
+    # In this case we suppose, that interval has length=1.
+    assert top_adjacent_cells or bottom_adjacent_cells
+
+    start = None
+    end = None
+    if top_adjacent_cells:
+      start = max(cell.text_rect.bottom - self.rect.top for cell in top_adjacent_cells)
+    if bottom_adjacent_cells:
+      end = min(cell.text_rect.top - self.rect.top for cell in bottom_adjacent_cells) + 1
+    if start is None:
+      assert end is not None
+      start = end - 1
+    if end is None:
+      assert start is not None
+      end = start + 1
+
+    return Interval(start, end)
+
+  def _get_vert_split_point_interval(self, split_point_index):
+    left_adjacent_cells = self._get_left_adjacent_cells(split_point_index)
+    right_adjacent_cells = self._get_right_adjacent_cells(split_point_index)
+    assert left_adjacent_cells
+    assert right_adjacent_cells
+    return Interval(
+      max(cell.text_rect.right - self.rect.left for cell in left_adjacent_cells), 
+      min(cell.text_rect.left - self.rect.left for cell in right_adjacent_cells) + 1
+    )
 

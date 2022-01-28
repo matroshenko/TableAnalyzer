@@ -1,4 +1,5 @@
 from datasets.ICDAR.rect import Rect
+from utils import get_intervals_of_ones
 
 
 class Grid(object):
@@ -10,6 +11,17 @@ class Grid(object):
 
         self._h_positions = h_positions
         self._v_positions = v_positions
+
+    @classmethod
+    def create_by_rect_and_masks(cls, rect, h_mask, v_mask):
+        assert rect.get_height() == len(h_mask)
+        assert rect.get_width() == len(v_mask)
+        h_intervals = get_intervals_of_ones(h_mask)
+        v_intervals = get_intervals_of_ones(v_mask)
+        return cls(
+            [rect.top] + [rect.top + interval.get_center() for interval in h_intervals] + [rect.bottom],
+            [rect.left] + [rect.left + interval.get_center() for interval in v_intervals] + [rect.right]
+        )
 
     def get_rows_count(self):
         return len(self._h_positions) - 1

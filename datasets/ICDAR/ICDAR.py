@@ -177,7 +177,7 @@ class IcdarMerge(IcdarBase):
   def _load_split_model(self, split_checkpoint_path):
     assert os.path.exists(split_checkpoint_path)
     model = Model()
-    random_image = tf.random.uniform(shape=(100, 200, 3), minval=0, maxval=255, dtype='int32')
+    random_image = tf.random.uniform(shape=(1, 100, 200, 3), minval=0, maxval=255, dtype='int32')
     model(random_image)
     model.load_weights(split_checkpoint_path)
     return model
@@ -191,8 +191,8 @@ class IcdarMerge(IcdarBase):
       'horz_split_points_binary': tfds.features.Tensor(shape=(None,), dtype=tf.int32),
       'vert_split_points_binary': tfds.features.Tensor(shape=(None,), dtype=tf.int32),  
       # Ground truth masks    
-      'merge_right_mask': tfds.features.Tensor(shape=(None, None), dtype=tf.bool),
-      'merge_down_mask': tfds.features.Tensor(shape=(None, None), dtype=tf.bool)
+      'merge_right_mask': tfds.features.Tensor(shape=(None, None), dtype=tf.bool, encoding='zlib'),
+      'merge_down_mask': tfds.features.Tensor(shape=(None, None), dtype=tf.bool, encoding='zlib')
     })
 
   def _get_single_example_dict(self, table_image, markup_table):
@@ -224,6 +224,6 @@ class IcdarMerge(IcdarBase):
       'vert_split_points_binary'
     ]
     return tuple(
-      tf.squeeze(outputs_dict[key], axis=0) for key in keys_of_interest
+      tf.squeeze(outputs_dict[key], axis=0).numpy() for key in keys_of_interest
     )
     

@@ -61,10 +61,10 @@ class IcdarBase(tfds.core.GeneratorBasedBuilder):
       'https://www.tamirhassan.com/html/files/icdar2013-competition-dataset-with-gt.zip')
 
     return {
-        'train': self._generate_examples(path, dl_manager)
+        'train': self._generate_examples(path)
     }
 
-  def _generate_examples(self, path, dl_manager):
+  def _generate_examples(self, path):
     """Yields examples."""
 
     for pdf_file_path in glob.glob(os.path.join(path, '**/*.pdf'), recursive=True):

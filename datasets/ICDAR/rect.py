@@ -23,7 +23,7 @@ class Rect(object):
   def intersects(self, other):
     return (
       self.left < other.right and other.left < self.right
-      and self.top < other.bottom and other.top < other.bottom
+      and self.top < other.bottom and other.top < self.bottom
     )
 
   def __eq__(self, other):

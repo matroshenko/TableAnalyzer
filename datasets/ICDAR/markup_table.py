@@ -69,9 +69,6 @@ class Table(object):
 
     return merge_right_mask, merge_down_mask
 
-  def create_merge_down_mask(self, grid):
-    pass
-
   def _get_horz_split_points_indexes(self):
     result = set()
     for cell in self.cells:

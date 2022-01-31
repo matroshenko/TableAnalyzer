@@ -20,5 +20,18 @@ class Rect(object):
       and self.top <= other.top and other.bottom <= self.bottom
     )
 
+  def intersects(self, other):
+    return (
+      self.left < other.right and other.left < self.right
+      and self.top < other.bottom and other.top < other.bottom
+    )
+
   def __eq__(self, other):
     return self.as_tuple() == other.as_tuple()
+
+  def __or__(self, other):
+    left = min(self.left, other.left)
+    top = min(self.top, other.top)
+    right = max(self.right, other.right)
+    bottom = max(self.bottom, other.bottom)
+    return Rect(left, top, right, bottom)

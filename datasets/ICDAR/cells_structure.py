@@ -64,21 +64,20 @@ class CellsStructureBuilder(object):
 
     def _merge_intersecting_cells(self, cells):
         while True:
-            ij = self._find_intersecting_cells_indexes(cells)
-            if ij is None:
+            pair = self._find_intersecting_cells(cells)
+            if pair is None:
                 break
-            i, j = ij
-            new_cell = cells[i] | cells[j]
-            cells.pop(i)
-            cells.pop(j)
+            new_cell = pair[0] | pair[1]
+            cells.remove(pair[0])
+            cells.remove(pair[1])
             cells.append(new_cell)
 
-    def _find_intersecting_cells_indexes(self, cells):
+    def _find_intersecting_cells(self, cells):
         n = len(cells)
         for i in range(n-1):
             cell_i = cells[i]
             for j in range(i+1, n):
                 cell_j = cells[j]
                 if cell_i.intersects(cell_j):
-                    return i, j
+                    return cell_i, cell_j
         return None

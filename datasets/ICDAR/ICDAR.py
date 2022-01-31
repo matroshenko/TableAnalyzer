@@ -81,10 +81,10 @@ class IcdarBase(tfds.core.GeneratorBasedBuilder):
         key = '{}-{}'.format(stem, table.id)
         page = pages[page_number]
         table_image = page.crop(table.rect.as_tuple())
-        yield key, self._get_single_example_dict(table_image, table, dl_manager)
+        yield key, self._get_single_example_dict(table_image, table)
 
   @abstractmethod
-  def _get_single_example_dict(self, table_image, markup_table, dl_manager):
+  def _get_single_example_dict(self, table_image, markup_table):
     """Returns dict with nessary inputs for the model."""
     pass
 
@@ -147,7 +147,7 @@ class IcdarSplit(IcdarBase):
       'vert_split_points_mask': tfds.features.Tensor(shape=(None,), dtype=tf.bool)
     })
 
-  def _get_single_example_dict(self, table_image, markup_table, dl_manager):
+  def _get_single_example_dict(self, table_image, markup_table):
     """Returns dict with nessary inputs for the model."""
 
     horz_split_points_mask = markup_table.create_horz_split_points_mask()

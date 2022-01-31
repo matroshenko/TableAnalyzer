@@ -38,7 +38,7 @@ def get_intervals_of_ones(mask):
     return result
 
 
-def create_debug_image(table_image, horz_split_points_mask, vert_split_points_mask):
+def create_split_result_image(table_image, horz_split_points_mask, vert_split_points_mask):
     height = len(horz_split_points_mask)
     width = len(vert_split_points_mask)
     split_points_image = table_image.copy()

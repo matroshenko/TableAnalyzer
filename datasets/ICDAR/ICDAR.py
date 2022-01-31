@@ -1,5 +1,6 @@
 """ICDAR 2013 table recognition dataset."""
 
+from abc import abstractmethod
 import xml.etree.ElementTree as ET
 import io
 import os
@@ -33,14 +34,8 @@ _FILES_TO_IGNORE = [
 ]
 
 
-class Icdar(tfds.core.GeneratorBasedBuilder):
-  """DatasetBuilder for ICDAR dataset."""
-
-  VERSION = tfds.core.Version('1.0.1')
-  RELEASE_NOTES = {
-      '1.0.0': 'Initial release.',
-      '1.0.1': 'Replaced splits images with one dimensional mask.'
-  }
+class IcdarBase(tfds.core.GeneratorBasedBuilder):
+  """Base DatasetBuilder for ICDAR datasets."""
 
   def _info(self) -> tfds.core.DatasetInfo:
     """Returns the dataset metadata."""
@@ -48,16 +43,16 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     return tfds.core.DatasetInfo(
         builder=self,
         description=_DESCRIPTION,
-        features=tfds.features.FeaturesDict({
-            # These are the features of your dataset like images, labels ...
-            'image': tfds.features.Image(shape=(None, None, 3)),
-            'horz_split_points_mask': tfds.features.Tensor(shape=(None,), dtype=tf.bool),
-            'vert_split_points_mask': tfds.features.Tensor(shape=(None,), dtype=tf.bool)
-        }),
+        features=self._get_features_dict(),
         homepage='https://www.tamirhassan.com/html/dataset.html',
         citation=_CITATION,
         disable_shuffling=False
     )
+
+  @abstractmethod
+  def _get_features_dict(self) -> tfds.features.FeaturesDict:
+    """Returns features, describing dataset element."""
+    pass
 
   def _split_generators(self, dl_manager: tfds.download.DownloadManager):
     """Returns SplitGenerators."""
@@ -66,10 +61,10 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
       'https://www.tamirhassan.com/html/files/icdar2013-competition-dataset-with-gt.zip')
 
     return {
-        'train': self._generate_examples(path)
+        'train': self._generate_examples(path, dl_manager)
     }
 
-  def _generate_examples(self, path):
+  def _generate_examples(self, path, dl_manager):
     """Yields examples."""
 
     for pdf_file_path in glob.glob(os.path.join(path, '**/*.pdf'), recursive=True):
@@ -86,13 +81,12 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
         key = '{}-{}'.format(stem, table.id)
         page = pages[page_number]
         table_image = page.crop(table.rect.as_tuple())
-        horz_split_points_mask = table.create_horz_split_points_mask()
-        vert_split_points_mask = table.create_vert_split_points_mask()
-        yield key, {
-          'image': self._image_to_byte_array(table_image),
-          'horz_split_points_mask': horz_split_points_mask,
-          'vert_split_points_mask': vert_split_points_mask
-        }
+        yield key, self._get_single_example_dict(table_image, table)
+
+  @abstractmethod
+  def _get_single_example_dict(self, table_image, markup_table):
+    """Returns dict with nessary inputs for the model."""
+    pass
 
   def _generate_tables(self, pages, region_file_path, structure_file_path):
     regions_tree = ET.parse(region_file_path)
@@ -136,3 +130,30 @@ class Icdar(tfds.core.GeneratorBasedBuilder):
     image.save(imgByteArr, format='png')
     imgByteArr = imgByteArr.getvalue()
     return imgByteArr
+
+
+class IcdarSplit(IcdarBase):
+  """DatasetBuilder for training SPLIT model."""
+
+  VERSION = tfds.core.Version('1.0.0')
+  RELEASE_NOTES = {
+      '1.0.0': 'Initial release.'
+  }
+
+  def _get_features_dict(self):
+    return tfds.features.FeaturesDict({
+      'image': tfds.features.Image(shape=(None, None, 3)),
+      'horz_split_points_mask': tfds.features.Tensor(shape=(None,), dtype=tf.bool),
+      'vert_split_points_mask': tfds.features.Tensor(shape=(None,), dtype=tf.bool)
+    })
+
+  def _get_single_example_dict(self, table_image, markup_table):
+    """Returns dict with nessary inputs for the model."""
+
+    horz_split_points_mask = markup_table.create_horz_split_points_mask()
+    vert_split_points_mask = markup_table.create_vert_split_points_mask()
+    return {
+      'image': self._image_to_byte_array(table_image),
+      'horz_split_points_mask': horz_split_points_mask,
+      'vert_split_points_mask': vert_split_points_mask
+    }

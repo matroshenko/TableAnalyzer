@@ -2,7 +2,7 @@ from datasets.ICDAR.rect import Rect
 from utils import get_intervals_of_ones
 
 
-class Grid(object):
+class GridStructure(object):
     def __init__(self, h_positions, v_positions):
         assert len(h_positions) >= 2
         assert len(v_positions) >= 2
@@ -11,17 +11,6 @@ class Grid(object):
 
         self._h_positions = h_positions
         self._v_positions = v_positions
-
-    @classmethod
-    def create_by_rect_and_masks(cls, rect, h_mask, v_mask):
-        assert rect.get_height() == len(h_mask)
-        assert rect.get_width() == len(v_mask)
-        h_intervals = get_intervals_of_ones(h_mask)
-        v_intervals = get_intervals_of_ones(v_mask)
-        return cls(
-            [rect.top] + [rect.top + interval.get_center() for interval in h_intervals] + [rect.bottom],
-            [rect.left] + [rect.left + interval.get_center() for interval in v_intervals] + [rect.right]
-        )
 
     def get_rows_count(self):
         return len(self._h_positions) - 1
@@ -51,4 +40,23 @@ class Grid(object):
         return (
             self._h_positions == other._h_positions 
             and self._v_positions == other._v_positions
+        )
+
+
+class GridStructureBuilder(object):
+    def __init__(self, rect, h_mask, v_mask):
+        assert rect.get_height() == len(h_mask)
+        assert rect.get_width() == len(v_mask)
+
+        self._rect = rect
+        self._h_mask = h_mask
+        self._v_mask = v_mask
+
+    def build(self):
+        h_intervals = get_intervals_of_ones(self._h_mask)
+        v_intervals = get_intervals_of_ones(self._v_mask)
+        rect = self._rect
+        return GridStructure(
+            [rect.top] + [rect.top + interval.get_center() for interval in h_intervals] + [rect.bottom],
+            [rect.left] + [rect.left + interval.get_center() for interval in v_intervals] + [rect.right]
         )

@@ -5,7 +5,7 @@ import numpy as np
 import context
 from datasets.ICDAR.rect import Rect
 from datasets.ICDAR.markup_table import Cell, Table
-from datasets.ICDAR.grid import Grid
+from datasets.ICDAR.grid_structure import GridStructure
 
 
 class TableTest(TestCase):
@@ -49,7 +49,7 @@ class TableTest(TestCase):
         self.assertTrue(np.all(mask == expected_mask))
 
     def test_merge_masks(self):
-        grid = Grid([1, 3, 5, 7, 9, 12], [2, 7, 11, 15, 19])
+        grid = GridStructure([1, 3, 5, 7, 9, 12], [2, 7, 11, 15, 19])
         merge_right_mask, merge_down_mask = self._table.create_merge_masks(grid)
 
         expected_merge_right_mask = [

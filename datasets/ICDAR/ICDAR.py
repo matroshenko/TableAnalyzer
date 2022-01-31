@@ -14,7 +14,7 @@ import PIL
 
 from datasets.ICDAR.markup_table import Cell, Table
 from datasets.ICDAR.rect import Rect
-from datasets.ICDAR.grid import Grid
+from datasets.ICDAR.grid_structure import GridStructureBuilder
 from split.model import Model
 
 
@@ -192,7 +192,7 @@ class IcdarMerge(IcdarBase):
     """Returns dict with nessary inputs for the model."""
 
     h_probs, v_probs, h_binary, v_binary = self._get_split_model_outputs(table_image)
-    grid = Grid.create_by_rect_and_masks(markup_table.rect, h_binary, v_binary)
+    grid = GridStructureBuilder(markup_table.rect, h_binary, v_binary).build()
     merge_right_mask, merge_down_mask = markup_table.create_merge_masks(grid)
     return {
       'image': self._image_to_byte_array(table_image),

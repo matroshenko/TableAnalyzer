@@ -11,9 +11,10 @@ class CellsStructureBuilder(object):
         self._cols_count = merge_down_mask.shape[1]
 
     def build(self):
-        initial_cells = self._build_initial_cells()
-        # TODO: Not implemented
-        pass
+        cells = self._build_initial_cells()
+        self._merge_intersecting_cells(cells)
+        
+        return cells
 
     def _build_initial_cells(self):
         graph = self._create_graph()
@@ -60,3 +61,24 @@ class CellsStructureBuilder(object):
         right = max(self._to_2d_index(v)[1] for v in component) + 1
         bottom = max(self._to_2d_index(v)[0] for v in component) + 1
         return Rect(left, top, right, bottom)
+
+    def _merge_intersecting_cells(self, cells):
+        while True:
+            ij = self._find_intersecting_cells_indexes(cells)
+            if ij is None:
+                break
+            i, j = ij
+            new_cell = cells[i] | cells[j]
+            cells.pop(i)
+            cells.pop(j)
+            cells.append(new_cell)
+
+    def _find_intersecting_cells_indexes(self, cells):
+        n = len(cells)
+        for i in range(n-1):
+            cell_i = cells[i]
+            for j in range(i+1, n):
+                cell_j = cells[j]
+                if cell_i.intersects(cell_j):
+                    return i, j
+        return None

@@ -175,7 +175,7 @@ class IcdarMerge(IcdarBase):
 
 
   def _load_split_model(self, split_checkpoint_path):
-    assert os.path.exists(split_checkpoint_path)
+    assert tf.io.gfile.exists(split_checkpoint_path)
     model = Model()
     random_image = tf.random.uniform(shape=(1, 100, 200, 3), minval=0, maxval=255, dtype='int32')
     model(random_image)

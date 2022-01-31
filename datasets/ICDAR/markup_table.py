@@ -58,13 +58,16 @@ class Table(object):
       outer_rect = self._calculate_outer_rect(cell)
       for i in range(n):
         for j in range(m):
-          if not outer_rect.contains(grid.get_cell_rect(i, j)):
+          cell = Rect(j, i, j+1, i+1)
+          if not outer_rect.contains(grid.get_cell_rect(cell)):
             continue
-
-          if j+1 < m and outer_rect.contains(grid.get_cell_rect(i, j+1)):
+          
+          right_cell = Rect(j+1, i, j+2, i+1)
+          if j+1 < m and outer_rect.contains(grid.get_cell_rect(right_cell)):
             merge_right_mask[i][j] = True
             
-          if i+1 < n and outer_rect.contains(grid.get_cell_rect(i+1, j)):
+          bottom_cell = Rect(j, i+1, j+1, i+2)
+          if i+1 < n and outer_rect.contains(grid.get_cell_rect(bottom_cell)):
             merge_down_mask[i][j] = True
 
     return merge_right_mask, merge_down_mask

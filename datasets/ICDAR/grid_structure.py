@@ -18,14 +18,15 @@ class GridStructure(object):
     def get_cols_count(self):
         return len(self._v_positions) - 1    
 
-    def get_cell_rect(self, i, j):
-        assert 0 <= i and i < self.get_rows_count()
-        assert 0 <= j and j < self.get_cols_count()
+    def get_cell_rect(self, cell):
+        """Convert cell rect from grid coordinates to real coordinates."""
+        assert 0 <= cell.top and cell.bottom <= self.get_rows_count()
+        assert 0 <= cell.left and cell.right <= self.get_cols_count()
         return Rect(
-            self._v_positions[j],
-            self._h_positions[i],
-            self._v_positions[j+1],
-            self._h_positions[i+1]
+            self._v_positions[cell.left],
+            self._h_positions[cell.top],
+            self._v_positions[cell.right],
+            self._h_positions[cell.bottom]
         )
 
     def get_bounding_rect(self):

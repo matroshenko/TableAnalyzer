@@ -171,16 +171,9 @@ class IcdarMerge(IcdarBase):
 
   def __init__(self, split_checkpoint_path, **kwargs):
     super().__init__(**kwargs)
-    self._split_model = self._load_split_model(split_checkpoint_path)
-
-
-  def _load_split_model(self, split_checkpoint_path):
-    assert tf.io.gfile.exists(split_checkpoint_path)
-    model = Model()
-    random_image = tf.random.uniform(shape=(1, 100, 200, 3), minval=0, maxval=255, dtype='int32')
-    model(random_image)
-    model.load_weights(split_checkpoint_path)
-    return model
+    self._split_checkpoint_path = split_checkpoint_path
+    # Lazy initialization
+    self._split_model = None
 
   def _get_features_dict(self):
     return tfds.features.FeaturesDict({
@@ -216,7 +209,7 @@ class IcdarMerge(IcdarBase):
       table_image, data_format='channels_last', dtype='uint8')
     table_image_tensor = tf.convert_to_tensor(table_image_array, dtype='uint8')
     table_image_tensor = tf.expand_dims(table_image_tensor, axis=0)
-    outputs_dict = self._split_model(table_image_tensor)
+    outputs_dict = self._get_split_model()(table_image_tensor)
     keys_of_interest = [
       'horz_split_points_probs3', 
       'vert_split_points_probs3',
@@ -226,4 +219,19 @@ class IcdarMerge(IcdarBase):
     return tuple(
       tf.squeeze(outputs_dict[key], axis=0).numpy() for key in keys_of_interest
     )
+
+  def _get_split_model(self):
+    if self._split_model is not None:
+      return self._split_model
+
+    assert tf.io.gfile.exists(self._split_checkpoint_path)
+    # Split model can't run in graph mode.
+    assert tf.executing_eagerly()
+    model = Model()
+    random_image = tf.random.uniform(shape=(1, 100, 200, 3), minval=0, maxval=255, dtype='int32')
+    model(random_image)
+    model.load_weights(self._split_checkpoint_path)
+    
+    self._split_model = model
+    return model
     

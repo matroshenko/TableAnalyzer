@@ -14,6 +14,7 @@ import PIL
 
 from datasets.ICDAR.markup_table import Cell, Table
 from datasets.ICDAR.rect import Rect
+from split.model import Model
 
 
 # TODO(ICDAR): Markdown description  that will appear on the catalog page.
@@ -157,3 +158,44 @@ class IcdarSplit(IcdarBase):
       'horz_split_points_mask': horz_split_points_mask,
       'vert_split_points_mask': vert_split_points_mask
     }
+
+
+class IcdarMerge(IcdarBase):
+  """DatasetBuilder for training MERGE model."""
+
+  VERSION = tfds.core.Version('1.0.0')
+  RELEASE_NOTES = {
+      '1.0.0': 'Initial release.'
+  }
+
+  def __init__(self, split_checkpoint_path, **kwargs):
+    super().__init__(**kwargs)
+    self._split_model = self._load_split_model(split_checkpoint_path)
+
+
+  def _load_split_model(self, split_checkpoint_path):
+    assert os.path.exists(split_checkpoint_path)
+    model = Model()
+    random_image = tf.random.uniform(shape=(100, 200, 3), minval=0, maxval=255, dtype='int32')
+    model(random_image)
+    model.load_weights(split_checkpoint_path)
+    return model
+
+  def _get_features_dict(self):
+    return tfds.features.FeaturesDict({
+      'image': tfds.features.Image(shape=(None, None, 3)),
+      # SPLIT model outputs
+      'horz_split_points_probs': tfds.features.Tensor(shape=(None,), dtype=tf.float32),
+      'vert_split_points_probs': tfds.features.Tensor(shape=(None,), dtype=tf.float32),
+      'horz_split_points_binary': tfds.features.Tensor(shape=(None,), dtype=tf.int32),
+      'vert_split_points_binary': tfds.features.Tensor(shape=(None,), dtype=tf.int32),  
+      # Ground truth masks    
+      'merge_right_mask': tfds.features.Tensor(shape=(None, None), dtype=tf.bool),
+      'merge_down_mask': tfds.features.Tensor(shape=(None, None), dtype=tf.bool)
+    })
+
+  def _get_single_example_dict(self, table_image, markup_table):
+    """Returns dict with nessary inputs for the model."""
+
+    # TODO: Not implemented
+    pass

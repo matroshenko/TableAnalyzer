@@ -5,7 +5,7 @@ from datasets.ICDAR.grid_structure import GridStructure, GridStructureBuilder
 from datasets.ICDAR.rect import Rect
 
 
-class GridTest(TestCase):
+class GridStructureTest(TestCase):
     def test_create_by_rect_and_masks(self):
         rect = Rect(2, 1, 19, 12)
         h_mask = [0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0]

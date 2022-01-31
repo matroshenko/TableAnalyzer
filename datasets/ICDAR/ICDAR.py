@@ -14,6 +14,7 @@ import PIL
 
 from datasets.ICDAR.markup_table import Cell, Table
 from datasets.ICDAR.rect import Rect
+from datasets.ICDAR.grid import Grid
 from split.model import Model
 
 
@@ -197,5 +198,32 @@ class IcdarMerge(IcdarBase):
   def _get_single_example_dict(self, table_image, markup_table):
     """Returns dict with nessary inputs for the model."""
 
-    # TODO: Not implemented
-    pass
+    h_probs, v_probs, h_binary, v_binary = self._get_split_model_outputs(table_image)
+    grid = Grid.create_by_rect_and_masks(markup_table.rect, h_binary, v_binary)
+    merge_right_mask, merge_down_mask = markup_table.create_merge_masks(grid)
+    return {
+      'image': self._image_to_byte_array(table_image),
+      'horz_split_points_probs': h_probs,
+      'vert_split_points_probs': v_probs,
+      'horz_split_points_binary': h_binary,
+      'vert_split_points_binary': v_binary,
+      'merge_right_mask': merge_right_mask,
+      'merge_down_mask': merge_down_mask
+    }
+
+  def _get_split_model_outputs(self, table_image):
+    table_image_array = tf.keras.utils.img_to_array(
+      table_image, data_format='channels_last', dtype='uint8')
+    table_image_tensor = tf.convert_to_tensor(table_image_array, dtype='uint8')
+    table_image_tensor = tf.expand_dims(table_image_tensor, axis=0)
+    outputs_dict = self._split_model(table_image_tensor)
+    keys_of_interest = [
+      'horz_split_points_probs3', 
+      'vert_split_points_probs3',
+      'horz_split_points_binary',
+      'vert_split_points_binary'
+    ]
+    return tuple(
+      tf.squeeze(outputs_dict[key], axis=0) for key in keys_of_interest
+    )
+    

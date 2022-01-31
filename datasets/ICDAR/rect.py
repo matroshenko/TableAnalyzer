@@ -29,9 +29,18 @@ class Rect(object):
   def __eq__(self, other):
     return self.as_tuple() == other.as_tuple()
 
+  def __lt__(self, other):
+    return self.as_tuple() < other.as_tuple()
+
   def __or__(self, other):
     left = min(self.left, other.left)
     top = min(self.top, other.top)
     right = max(self.right, other.right)
     bottom = max(self.bottom, other.bottom)
     return Rect(left, top, right, bottom)
+
+  def __repr__(self):
+    return '[{}, {}, {}, {}]'.format(self.left, self.top, self.right, self.bottom)
+
+  def __hash__(self):
+    return hash(self.as_tuple())

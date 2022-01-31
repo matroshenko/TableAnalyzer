@@ -154,13 +154,17 @@ class Table(object):
 
   def _calculate_outer_rect(self, cell):
     table_rect = self.rect
-    rows_count = len(self._get_horz_split_points_indexes()) - 1
-    cols_count = len(self._get_vert_split_points_indexes()) - 1
-
     grid_rect = cell.grid_rect
-    left = self._get_vert_split_point_interval(grid_rect.left).start if grid_rect.left > 0 else table_rect.left
-    top = self._get_horz_split_point_interval(grid_rect.top).start if grid_rect.top > 0 else table_rect.top
-    right = self._get_vert_split_point_interval(grid_rect.right).end if grid_rect.right < cols_count else table_rect.right
-    bottom = self._get_horz_split_point_interval(grid_rect.bottom).end if grid_rect.bottom < rows_count else table_rect.bottom
+    horz_split_points_indexes = self._get_horz_split_points_indexes()
+    vert_split_points_indexes = self._get_vert_split_points_indexes()
+    is_adjacent_to_left_border = grid_rect.left == vert_split_points_indexes[0]
+    is_adjacent_to_top_border = grid_rect.top == horz_split_points_indexes[0]
+    is_adjacent_to_right_border = grid_rect.right == vert_split_points_indexes[-1]
+    is_adjacent_to_bottom_border = grid_rect.bottom == horz_split_points_indexes[-1]
+    
+    left = table_rect.left if is_adjacent_to_left_border else self._get_vert_split_point_interval(grid_rect.left).start
+    top = table_rect.top if is_adjacent_to_top_border else self._get_horz_split_point_interval(grid_rect.top).start
+    right = table_rect.right if is_adjacent_to_right_border else self._get_vert_split_point_interval(grid_rect.right).end
+    bottom = table_rect.bottom if is_adjacent_to_bottom_border else self._get_horz_split_point_interval(grid_rect.bottom).end
 
     return Rect(left, top, right, bottom)

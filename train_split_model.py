@@ -6,7 +6,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow_datasets as tfds
 
-from datasets.ICDAR.ICDAR import Icdar
+from datasets.ICDAR.ICDAR import IcdarSplit
 from split.model import Model
 from split.intervalwise_f_measure import IntervalwiseFMeasure
 
@@ -99,7 +99,7 @@ def main(args):
         metrics=get_metrics_dict(), run_eagerly=True)
 
     ds_train, ds_test = tfds.load(
-        'ICDAR',
+        'icdar_split',
         split=['train[:90%]', 'train[90%:]']
     )
     ds_train = build_data_pipeline(ds_train, Target.Train, args.max_samples_count)

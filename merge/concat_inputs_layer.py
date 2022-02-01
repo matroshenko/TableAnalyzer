@@ -28,8 +28,8 @@ class ConcatInputsLayer(keras.layers.Layer):
             table_image, 
             broadcasted_h_probs, 
             broadcasted_v_probs, 
-            broadcasted_h_binary,
-            broadcasted_v_binary,
+            tf.cast(broadcasted_h_binary, tf.float32),
+            tf.cast(broadcasted_v_binary, tf.float32),
             grid_image
         ], axis=3)
 
@@ -49,7 +49,7 @@ class ConcatInputsLayer(keras.layers.Layer):
         horz_split_points_intervals = get_intervals_of_ones(h_binary)
         vert_split_points_intervals = get_intervals_of_ones(v_binary)
 
-        result = np.zeros(shape=(1, height, width, 1), dtype='int32')
+        result = np.zeros(shape=(1, height, width, 1), dtype='float32')
         # Original paper recommends to draw lines with thickness=7,
         # but we think, that thickness=1 is enough.
         for h_interval in horz_split_points_intervals:

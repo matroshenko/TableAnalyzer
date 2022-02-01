@@ -1,3 +1,6 @@
+import pickle
+
+import tensorflow as tf
 import numpy as np
 
 from utils import Interval
@@ -9,12 +12,34 @@ class Cell(object):
     self.text_rect = text_rect
     self.grid_rect = grid_rect
 
+  def __eq__(self, other):
+    return (
+      self.text_rect == other.text_rect
+      and self.grid_rect == other.grid_rect
+    )
+
 
 class Table(object):
   def __init__(self, id, rect, cells):
     self.id = id
     self.rect = rect
     self.cells = cells
+
+  def __eq__(self, other):
+    return (
+      self.id == other.id
+      and self.rect == other.rect
+      and self.cells == other.cells
+    )
+
+  def to_tensor(self):
+    bytes = pickle.dumps(self)
+    return tf.constant(bytes)
+
+  @staticmethod
+  def from_tensor(tensor):
+    bytes = tensor.numpy()
+    return pickle.loads(bytes)
 
   def create_horz_split_points_mask(self):
     height = self.rect.bottom - self.rect.top

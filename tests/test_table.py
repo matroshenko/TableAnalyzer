@@ -36,6 +36,11 @@ class TableTest(TestCase):
         ]
         self._table = Table(0, rect, cells)
 
+    def test_tensor_conversion(self):
+        tensor = self._table.to_tensor()
+        reconstructed_table = Table.from_tensor(tensor)
+        self.assertEqual(self._table, reconstructed_table)
+
     def test_horz_split_points_mask(self):
         mask = self._table.create_horz_split_points_mask()
         expected_mask = np.array(

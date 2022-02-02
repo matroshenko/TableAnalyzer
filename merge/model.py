@@ -84,3 +84,17 @@ class GridPoolingNetworkFinalBlock(keras.layers.Layer):
         result = self._prediction_layer(result, h_positions, v_positions)
         result = self._flatten_layer(result)
         return result
+
+
+class GridPoolingNetwork(keras.layers.Layer):
+    def __init__(self, name):
+        super().__init__(name=name)
+        self._block1 = GridPoolingNetworkBlock(False)
+        self._block2 = GridPoolingNetworkBlock(True)
+        self._block3 = GridPoolingNetworkFinalBlock()
+
+    def call(self, input, h_positions, v_positions):
+        block1_output = self._block1(input, h_positions, v_positions)
+        block2_output, probs1 = self._block2(block1_output, h_positions, v_positions)
+        probs2 = self._block5(block2_output, h_positions, v_positions)
+        return probs1, probs2

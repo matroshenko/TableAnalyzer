@@ -126,7 +126,13 @@ class Model(keras.models.Model):
         self._combine_outputs1 = CombineOutputsLayer()
         self._combine_outputs2 = CombineOutputsLayer()
 
-    def call(self, image, h_probs, v_probs, h_binary, v_binary):
+    def call(self, input_dict):
+        image = input_dict['image']
+        h_probs = input_dict['horz_split_points_probs']
+        v_probs = input_dict['vert_split_points_probs']
+        h_binary = input_dict['horz_split_points_binary']
+        v_binary = input_dict['vert_split_points_binary']
+
         normalized_image = self._normalize_image_layer(image)
         input = self._concat_inputs_layer(normalized_image, h_probs, v_probs, h_binary, v_binary)
         sfcn_output = self._sfcn(input)

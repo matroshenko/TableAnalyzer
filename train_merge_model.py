@@ -29,17 +29,18 @@ def get_metrics_dict():
     return {}
 
 def convert_ds_element_to_tuple(element):
-    image = element['image']
-    h_probs = element['horz_split_points_probs']
-    v_probs = element['vert_split_points_probs']
-    h_binary = element['horz_split_points_binary']
-    v_binary = element['vert_split_points_binary']
-
     merge_down_mask = element['merge_down_mask']
     merge_right_mask = element['merge_right_mask']
 
+    input_keys = [
+        'image', 
+        'horz_split_points_probs', 
+        'vert_split_points_probs',
+        'horz_split_points_binary',
+        'vert_split_points_binary'
+    ]
     return (
-        (image, h_probs, v_probs, h_binary, v_binary),
+        {key: element[key] for key in input_keys},
         {
             'merge_down_probs1': merge_down_mask,
             'merge_down_probs2': merge_down_mask,

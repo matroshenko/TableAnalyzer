@@ -11,10 +11,10 @@ from merge.model import Model
 
 def get_losses_dict():
     return {
-        'merge_down_probs1': keras.losses.BinaryCrossentropy(from_logits=False),
-        'merge_down_probs2': keras.losses.BinaryCrossentropy(from_logits=False),
-        'merge_right_probs1': keras.losses.BinaryCrossentropy(from_logits=False),
-        'merge_right_probs2': keras.losses.BinaryCrossentropy(from_logits=False)
+        'merge_down_probs1': keras.losses.BinaryCrossentropy(from_logits=False, axis=(1, 2)),
+        'merge_down_probs2': keras.losses.BinaryCrossentropy(from_logits=False, axis=(1, 2)),
+        'merge_right_probs1': keras.losses.BinaryCrossentropy(from_logits=False, axis=(1, 2)),
+        'merge_right_probs2': keras.losses.BinaryCrossentropy(from_logits=False, axis=(1, 2))
     }
 
 def get_losses_weights():
@@ -75,7 +75,7 @@ def main(args):
     # For reproducible results.
     tf.random.set_seed(42)
     # For debugging it's better to see full stack trace.
-    tf.debugging.disable_traceback_filtering()
+    #tf.debugging.disable_traceback_filtering()
 
     model = Model()
     lr_schedule = keras.optimizers.schedules.ExponentialDecay(

@@ -9,10 +9,10 @@ class ConcatInputsLayer(keras.layers.Layer):
     def __init__(self):
         super().__init__()
 
-    def call(self, table_image, h_probs, v_probs, h_binary, v_binary):
+    def call(self, normalized_image, h_probs, v_probs, h_binary, v_binary):
         assert tf.executing_eagerly()
-        height = table_image.shape[1]
-        width = table_image.shape[2]
+        height = normalized_image.shape[1]
+        width = normalized_image.shape[2]
         assert h_probs.shape[1] == height
         assert v_probs.shape[1] == width
         assert h_binary.shape == h_probs.shape
@@ -25,7 +25,7 @@ class ConcatInputsLayer(keras.layers.Layer):
         grid_image = self._create_grid_image(h_binary, v_binary, height, width)
 
         return tf.concat([
-            table_image, 
+            normalized_image, 
             broadcasted_h_probs, 
             broadcasted_v_probs, 
             tf.cast(broadcasted_h_binary, tf.float32),

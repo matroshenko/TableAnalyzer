@@ -31,9 +31,9 @@ class GridPoolingLayer(keras.layers.Layer):
             else (1, grid.get_rows_count(), grid.get_cols_count(), channels))
         result = np.zeros(result_shape, dtype='float32')
 
-        for i in grid.get_rows_count():
-            for j in grid.get_cols_count():
-                cell = grid.get_cell_rect(Rect(i, j, i+1, j+1))
+        for i in range(grid.get_rows_count()):
+            for j in range(grid.get_cols_count()):
+                cell = grid.get_cell_rect(Rect(j, i, j+1, i+1))
                 averaged_block = self._get_averaged_block(input_array, cell)
                 if self._keep_size:
                     result[0, cell.top : cell.bottom, cell.left : cell.right, :] = averaged_block

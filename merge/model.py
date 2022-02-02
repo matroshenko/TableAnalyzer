@@ -41,6 +41,7 @@ class GridPoolingNetworkBlock(keras.layers.Layer):
         self._lower_branch_pool = GridPoolingLayer(True)
         if should_output_predictions:
             self._prediction_layer = GridPoolingLayer(False)
+            self._flatten_layer = keras.layers.Flatten()
 
         self._concat2 = keras.layers.Concatenate()
 
@@ -55,9 +56,31 @@ class GridPoolingNetworkBlock(keras.layers.Layer):
         lower_result = self._lower_branch_conv(middle_result)
         if self._should_output_predictions:
             predictions = self._prediction_layer(lower_result, h_positions, v_positions)
+            predictions = self._flatten_layer(predictions)
         lower_result = self._lower_branch_pool(lower_result, h_positions, v_positions)
 
         result = self._concat2([upper_result, middle_result, lower_result])
         if self._should_output_predictions:
             return [result, predictions]
+        return result
+
+
+class GridPoolingNetworkFinalBlock(keras.layers.Layer):
+    def __init__(self):
+        super().__init__()
+        self._dilated_conv1 = keras.layers.Conv2D(6, 3, padding='same', activation='relu', dilation_rate=1)
+        self._dilated_conv2 = keras.layers.Conv2D(6, 3, padding='same', activation='relu', dilation_rate=2)
+        self._dilated_conv3 = keras.layers.Conv2D(6, 3, padding='same', activation='relu', dilation_rate=3)
+        self._concat = keras.layers.Concatenate()
+        self._conv1x1 = keras.layers.Conv2D(1, 1, activation='sigmoid')
+        self._prediction_layer = GridPoolingLayer(False)
+        self._flatten_layer = keras.layers.Flatten()
+
+    def call(self, input, h_positions, v_positions):
+        result = self._concat(
+            [self._dilated_conv1(input), self._dilated_conv2(input), self._dilated_conv3(input)]
+        )
+        result = self._conv1x1(result)
+        result = self._prediction_layer(result, h_positions, v_positions)
+        result = self._flatten_layer(result)
         return result

@@ -9,19 +9,19 @@ class SharedFullyConvolutionalNetwork(keras.layers.Layer):
         # Original paper suggests to use kernel size = 7,
         # which leads to excessive memory consumption.
         self._conv1 = keras.layers.Conv2D(18, 3, padding='same', activation='relu')
-        self._pool1 = keras.layers.MaxPool2D()
+        #self._pool1 = keras.layers.MaxPool2D()
         self._conv2 = keras.layers.Conv2D(18, 3, padding='same', activation='relu')
         self._conv3 = keras.layers.Conv2D(18, 3, padding='same', activation='relu')
         self._conv4 = keras.layers.Conv2D(18, 3, padding='same', activation='relu')
-        self._pool2 = keras.layers.MaxPool2D()
+        #self._pool2 = keras.layers.MaxPool2D()
 
     def call(self, input):
         result = self._conv1(input)
-        result = self._pool1(result)
+        #result = self._pool1(result)
         result = self._conv2(result)
         result = self._conv3(result)
         result = self._conv4(result)
-        result = self._pool2(result)
+        #result = self._pool2(result)
         return result
 
 
@@ -94,3 +94,5 @@ class GridPoolingNetwork(keras.layers.Layer):
         block2_output, probs1 = self._block2(block1_output, h_positions, v_positions)
         probs2 = self._block5(block2_output, h_positions, v_positions)
         return probs1, probs2
+
+

@@ -2,6 +2,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 
 from merge.grid_pooling_layer import GridPoolingLayer
+from merge.concat_inputs_layer import ConcatInputsLayer
 
 class SharedFullyConvolutionalNetwork(keras.layers.Layer):
     def __init__(self):
@@ -96,3 +97,49 @@ class GridPoolingNetwork(keras.layers.Layer):
         return probs1, probs2
 
 
+class CombineOutputsLayer(keras.layers.Layer):
+    def call(self, up_prob, down_prob, left_prob, right_prob):
+        merge_down_prob = (
+            0.5 * up_prob[:, 1:, :] * down_prob[:, :-1, :] 
+            + 0.25 * (up_prob[:, 1:, :] + down_prob[:, :-1, :])
+        )
+        merge_right_prob = (
+            0.5 * left_prob[: :, 1:] * right_prob[:, :, :-1]
+            + 0.25 * (left_prob[: :, 1:] + right_prob[:, :, :-1])
+        )
+        return merge_down_prob, merge_right_prob
+
+
+class Model(keras.models.Model):
+    def __init__(self):
+        super().__init__()
+        self._normalize_image_layer = keras.layers.experimental.preprocessing.Rescaling(
+            scale=1./255)
+        self._concat_inputs_layer = ConcatInputsLayer()
+        self._sfcn = SharedFullyConvolutionalNetwork()
+        self._up_branch = GridPoolingNetwork('up_branch')
+        self._down_branch = GridPoolingNetwork('down_branch')
+        self._left_branch = GridPoolingNetwork('left_branch')
+        self._right_branch = GridPoolingNetwork('right_branch')
+        self._combine_outputs1 = CombineOutputsLayer()
+        self._combine_outputs2 = CombineOutputsLayer()
+
+    def call(self, image, h_probs, v_probs, h_binary, v_binary):
+        normalized_image = self._normalize_image_layer(image)
+        input = self._concat_inputs_layer(normalized_image, h_probs, v_probs, h_binary, v_binary)
+        sfcn_output = self._sfcn(input)
+        
+        up_prob1, up_prob2 = self._up_branch(sfcn_output, h_binary, v_binary)
+        down_prob1, down_prob2 = self._down_branch(sfcn_output, h_binary, v_binary)
+        left_prob1, left_prob2 = self._left_branch(sfcn_output, h_binary, v_binary)
+        right_prob1, right_prob2 = self._right_branch(sfcn_output, h_binary, v_binary)
+
+        merge_down_prob1, merge_right_prob1 = self._combine_outputs1(up_prob1, down_prob1, left_prob1, right_prob1)
+        merge_down_prob2, merge_right_prob2 = self._combine_outputs1(up_prob2, down_prob2, left_prob2, right_prob2)
+
+        return {
+            'merge_down_probs1': merge_down_prob1,
+            'merge_right_probs1': merge_right_prob1,
+            'merge_down_probs2': merge_down_prob2,
+            'merge_right_probs2': merge_right_prob2
+        }

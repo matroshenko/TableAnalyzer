@@ -44,18 +44,18 @@ class GridPoolingNetworkBlock(keras.layers.Layer):
 
         self._concat2 = keras.layers.Concatenate()
 
-    def call(self, input, h_positions, v_positions):
+    def call(self, input, h_mask, v_mask):
         middle_result = self._concat1(
             [self._dilated_conv1(input), self._dilated_conv2(input), self._dilated_conv3(input)]
         )
 
         upper_result = self._upper_branch_conv(middle_result)
-        upper_result = self._upper_branch_pool(upper_result, h_positions, v_positions)
+        upper_result = self._upper_branch_pool(upper_result, h_mask, v_mask)
 
         lower_result = self._lower_branch_conv(middle_result)
         if self._should_output_predictions:
-            predictions = self._prediction_layer(lower_result, h_positions, v_positions)
-        lower_result = self._lower_branch_pool(lower_result, h_positions, v_positions)
+            predictions = self._prediction_layer(lower_result, h_mask, v_mask)
+        lower_result = self._lower_branch_pool(lower_result, h_mask, v_mask)
 
         result = self._concat2([upper_result, middle_result, lower_result])
         if self._should_output_predictions:
@@ -73,12 +73,12 @@ class GridPoolingNetworkFinalBlock(keras.layers.Layer):
         self._conv1x1 = keras.layers.Conv2D(1, 1, activation='sigmoid')
         self._prediction_layer = GridPoolingLayer(False)
 
-    def call(self, input, h_positions, v_positions):
+    def call(self, input, h_mask, v_mask):
         result = self._concat(
             [self._dilated_conv1(input), self._dilated_conv2(input), self._dilated_conv3(input)]
         )
         result = self._conv1x1(result)
-        result = self._prediction_layer(result, h_positions, v_positions)
+        result = self._prediction_layer(result, h_mask, v_mask)
         return result
 
 
@@ -89,10 +89,10 @@ class GridPoolingNetwork(keras.layers.Layer):
         self._block2 = GridPoolingNetworkBlock(True)
         self._block3 = GridPoolingNetworkFinalBlock()
 
-    def call(self, input, h_positions, v_positions):
-        block1_output = self._block1(input, h_positions, v_positions)
-        block2_output, probs1 = self._block2(block1_output, h_positions, v_positions)
-        probs2 = self._block5(block2_output, h_positions, v_positions)
+    def call(self, input, h_mask, v_mask):
+        block1_output = self._block1(input, h_mask, v_mask)
+        block2_output, probs1 = self._block2(block1_output, h_mask, v_mask)
+        probs2 = self._block5(block2_output, h_mask, v_mask)
         return probs1, probs2
 
 

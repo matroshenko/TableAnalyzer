@@ -56,6 +56,7 @@ class GridPoolingNetworkBlock(keras.layers.Layer):
         lower_result = self._lower_branch_conv(middle_result)
         if self._should_output_predictions:
             predictions = self._prediction_layer(lower_result, h_mask, v_mask)
+            predictions = tf.squeeze(predictions, axis=3)
         lower_result = self._lower_branch_pool(lower_result, h_mask, v_mask)
 
         result = self._concat2([upper_result, middle_result, lower_result])
@@ -80,6 +81,7 @@ class GridPoolingNetworkFinalBlock(keras.layers.Layer):
         )
         result = self._conv1x1(result)
         result = self._prediction_layer(result, h_mask, v_mask)
+        result = tf.squeeze(result, axis=3)
         return result
 
 
@@ -93,7 +95,7 @@ class GridPoolingNetwork(keras.layers.Layer):
     def call(self, input, h_mask, v_mask):
         block1_output = self._block1(input, h_mask, v_mask)
         block2_output, probs1 = self._block2(block1_output, h_mask, v_mask)
-        probs2 = self._block5(block2_output, h_mask, v_mask)
+        probs2 = self._block3(block2_output, h_mask, v_mask)
         return probs1, probs2
 
 
@@ -104,8 +106,8 @@ class CombineOutputsLayer(keras.layers.Layer):
             + 0.25 * (up_prob[:, 1:, :] + down_prob[:, :-1, :])
         )
         merge_right_prob = (
-            0.5 * left_prob[: :, 1:] * right_prob[:, :, :-1]
-            + 0.25 * (left_prob[: :, 1:] + right_prob[:, :, :-1])
+            0.5 * left_prob[:, :, 1:] * right_prob[:, :, :-1]
+            + 0.25 * (left_prob[:, :, 1:] + right_prob[:, :, :-1])
         )
         return merge_down_prob, merge_right_prob
 

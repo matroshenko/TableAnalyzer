@@ -36,9 +36,9 @@ class GridPoolingNetworkBlock(keras.layers.Layer):
         self._dilated_conv3 = keras.layers.Conv2D(6, 3, padding='same', activation='relu', dilation_rate=3)
         self._concat1 = keras.layers.Concatenate()
 
-        self._upper_branch_conv = keras.layers.Conv2D(18, 1, activation='relu')
+        self._upper_branch_conv = keras.layers.Conv2D(18, 1, activation='relu', name='upper_branch_conv')
         self._upper_branch_pool = GridPoolingLayer(True)
-        self._lower_branch_conv = keras.layers.Conv2D(1, 1, activation='sigmoid')
+        self._lower_branch_conv = keras.layers.Conv2D(1, 1, activation='sigmoid', name='lower_branch_conv')
         self._lower_branch_pool = GridPoolingLayer(True)
         if should_output_predictions:
             self._prediction_layer = GridPoolingLayer(False)

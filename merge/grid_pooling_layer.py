@@ -39,5 +39,5 @@ class GridPoolingLayer(keras.layers.Layer):
         block = input[:, cell.top : cell.bottom, cell.left : cell.right, :]
         averaged_block = tf.reduce_mean(block, axis=(1, 2), keepdims=True)
         if self._keep_size:
-            averaged_block = np.broadcast_to(averaged_block, block.shape)
+            averaged_block = tf.broadcast_to(averaged_block, block.shape)
         return averaged_block

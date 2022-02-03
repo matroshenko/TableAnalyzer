@@ -35,7 +35,6 @@ class GridPoolingLayer(keras.layers.Layer):
 
         return tf.concat(rows, axis=1)
 
-
     def _get_averaged_block(self, input, cell):
         block = input[:, cell.top : cell.bottom, cell.left : cell.right, :]
         averaged_block = tf.reduce_mean(block, axis=(1, 2), keepdims=True)

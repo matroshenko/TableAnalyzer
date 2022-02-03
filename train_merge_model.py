@@ -84,9 +84,6 @@ def main(args):
         decay_rate=0.075,
         staircase=True)
 
-    # Unfortunately you need to run model in eager mode,
-    # because some custom layers (BinarizeLayer and IntervalwiseFMeasure)
-    # can't run in graph mode.
     model.compile(
         keras.optimizers.Adam(lr_schedule), 
         loss=get_losses_dict(), 

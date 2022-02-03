@@ -67,7 +67,7 @@ def build_data_pipeline(ds, target, max_samples_count):
 
 def get_tensorboard_callback():
     now = datetime.utcnow().strftime('%Y%m%d%H%M%S')
-    root_logdir = '/tmp/tf_logs'
+    root_logdir = '/tmp/tf_logs/merge'
     logdir = '{}/run-{}/'.format(root_logdir, now)
     return tf.keras.callbacks.TensorBoard(log_dir=logdir)
 

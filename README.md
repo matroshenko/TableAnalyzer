@@ -5,18 +5,27 @@ C. Tensmeyer, V. I. Morariu, B. Price, S. Cohen and T. Martinez, "Deep Splitting
 
 # Usage
 To train SPLIT model use script `train_split_model.py`. 
+To train MERGE model use script `train_merge_model.py`.
 Run with `--help` argument to view usage info.
 
 # Results
 
-I have trained SPLIT model on my machine (NVIDIA GeForce GTX 1080 Ti) for 100 epochs and obtained following results on validation set:
+We have trained SPLIT model on GPU (NVIDIA GeForce GTX 1080 Ti) for 100 epochs and obtained following results on validation set:
 
 |                   | Intervalwise F-score |
 | ----------------- | -------------------- |
 | Horz split points | 0.9668               |
 | Vert split points | 0.9600               |
 
+We have trained MERGE model for 100 epochs and obtained val_loss = 0.1372.
+
 # Images
 
-![](images/split_model_predictions.png)
-Fig 1. SPLIT model predictions blended with sample table images. 
+![](images/merge_model_predictions.png)
+Fig 1. MERGE model predictions on validation dataset.
+
+# Conclusion
+
+As we see, SPLIT architecture generalizes pretty well, even when trained on such a sparse dataset.
+MERGE architecture failed to generalize well, because there is not enough spanning cells in training dataset.
+As we know from the original paper, simple heuristic postprocessing works much better.

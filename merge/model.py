@@ -145,7 +145,7 @@ class Model(keras.models.Model):
         right_prob1, right_prob2 = self._right_branch(sfcn_output, h_binary, v_binary)
 
         merge_down_prob1, merge_right_prob1 = self._combine_outputs1(up_prob1, down_prob1, left_prob1, right_prob1)
-        merge_down_prob2, merge_right_prob2 = self._combine_outputs1(up_prob2, down_prob2, left_prob2, right_prob2)
+        merge_down_prob2, merge_right_prob2 = self._combine_outputs2(up_prob2, down_prob2, left_prob2, right_prob2)
 
         return {
             'merge_down_probs1': merge_down_prob1,

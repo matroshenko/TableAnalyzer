@@ -1,8 +1,8 @@
 from PIL import Image, ImageDraw
 
-from datasets.ICDAR.rect import Rect
-from datasets.ICDAR.grid_structure import GridStructureBuilder
-from datasets.ICDAR.cells_structure import CellsStructureBuilder
+from rect import Rect
+from table.grid_structure import GridStructureBuilder
+from table.cells_structure import CellsStructureBuilder
 from utils import get_intervals_of_ones
 
 

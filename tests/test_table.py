@@ -3,9 +3,9 @@ from unittest import TestCase, main
 import numpy as np
 
 import context
-from datasets.ICDAR.rect import Rect
+from rect import Rect
 from datasets.ICDAR.markup_table import Cell, Table
-from datasets.ICDAR.grid_structure import GridStructure
+from table.grid_structure import GridStructure
 
 
 class TableTest(TestCase):

@@ -3,8 +3,8 @@ from unittest import TestCase, main
 import numpy as np
 
 import context
-from datasets.ICDAR.cells_structure import CellsStructureBuilder
-from datasets.ICDAR.rect import Rect
+from table.cells_structure import CellsStructureBuilder
+from rect import Rect
 
 class TestCellsStructure(TestCase):
     def test_simple(self):

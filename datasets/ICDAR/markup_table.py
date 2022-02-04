@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 
 from utils import Interval
-from datasets.ICDAR.rect import Rect
+from rect import Rect
 
 
 class Cell(object):

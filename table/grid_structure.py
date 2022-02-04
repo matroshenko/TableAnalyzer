@@ -1,4 +1,4 @@
-from datasets.ICDAR.rect import Rect
+from rect import Rect
 from utils import get_intervals_of_ones
 
 

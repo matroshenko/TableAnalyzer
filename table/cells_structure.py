@@ -1,6 +1,6 @@
 import igraph
 
-from datasets.ICDAR.rect import Rect
+from rect import Rect
 
 
 class CellsStructureBuilder(object):

@@ -1,8 +1,8 @@
 from unittest import TestCase, main
 
 import context
-from datasets.ICDAR.grid_structure import GridStructure, GridStructureBuilder
-from datasets.ICDAR.rect import Rect
+from table.grid_structure import GridStructure, GridStructureBuilder
+from rect import Rect
 
 
 class GridStructureTest(TestCase):

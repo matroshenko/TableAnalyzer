@@ -2,8 +2,8 @@ import tensorflow as tf
 import tensorflow.keras as keras
 import numpy as np
 
-from datasets.ICDAR.grid_structure import GridStructureBuilder
-from datasets.ICDAR.rect import Rect
+from table.grid_structure import GridStructureBuilder
+from rect import Rect
 
 
 class GridPoolingLayer(keras.layers.Layer):

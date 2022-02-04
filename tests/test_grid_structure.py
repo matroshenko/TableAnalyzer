@@ -2,7 +2,7 @@ from unittest import TestCase, main
 
 import context
 from table.grid_structure import GridStructure, GridStructureBuilder
-from rect import Rect
+from utils.rect import Rect
 
 
 class GridStructureTest(TestCase):

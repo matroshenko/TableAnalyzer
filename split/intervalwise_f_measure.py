@@ -1,7 +1,7 @@
 import tensorflow.keras as keras
 import igraph
 
-from utils import Interval, get_intervals_of_ones
+from utils.interval import Interval, get_intervals_of_ones
 
 
 class IntervalwiseFMeasure(keras.metrics.Metric):

@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 import numpy as np
 
-from utils import get_intervals_of_ones
+from utils.interval import get_intervals_of_ones
 
 
 class ConcatInputsLayer(keras.layers.Layer):

@@ -3,8 +3,8 @@ import pickle
 import tensorflow as tf
 import numpy as np
 
-from utils import Interval
-from rect import Rect
+from utils.interval import Interval
+from utils.rect import Rect
 
 
 class Cell(object):

@@ -1,9 +1,9 @@
 from PIL import Image, ImageDraw
 
-from rect import Rect
+from utils.rect import Rect
 from table.grid_structure import GridStructureBuilder
 from table.cells_structure import CellsStructureBuilder
-from utils import get_intervals_of_ones
+from utils.interval import get_intervals_of_ones
 
 
 def create_split_result_image(table_image, horz_split_points_mask, vert_split_points_mask):

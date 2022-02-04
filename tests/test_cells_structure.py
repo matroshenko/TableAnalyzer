@@ -4,7 +4,7 @@ import numpy as np
 
 import context
 from table.cells_structure import CellsStructureBuilder
-from rect import Rect
+from utils.rect import Rect
 
 class TestCellsStructure(TestCase):
     def test_simple(self):

@@ -3,7 +3,7 @@ from unittest import TestCase, main
 import numpy as np
 
 import context
-from rect import Rect
+from utils.rect import Rect
 from datasets.ICDAR.markup_table import Cell, Table
 from table.grid_structure import GridStructure
 

@@ -1,5 +1,5 @@
-from rect import Rect
-from utils import get_intervals_of_ones
+from utils.rect import Rect
+from utils.interval import get_intervals_of_ones
 
 
 class GridStructure(object):

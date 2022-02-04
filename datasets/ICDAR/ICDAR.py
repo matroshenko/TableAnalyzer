@@ -13,7 +13,7 @@ import pdf2image
 import PIL
 
 from datasets.ICDAR.markup_table import Cell, Table
-from rect import Rect
+from utils.rect import Rect
 from table.grid_structure import GridStructureBuilder
 from split.model import Model
 

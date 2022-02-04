@@ -3,7 +3,7 @@ import tensorflow.keras as keras
 import numpy as np
 
 from table.grid_structure import GridStructureBuilder
-from rect import Rect
+from utils.rect import Rect
 
 
 class GridPoolingLayer(keras.layers.Layer):

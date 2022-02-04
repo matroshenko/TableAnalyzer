@@ -1,6 +1,6 @@
 import igraph
 
-from rect import Rect
+from utils.rect import Rect
 
 
 class CellsStructureBuilder(object):

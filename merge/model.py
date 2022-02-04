@@ -10,8 +10,6 @@ class SharedFullyConvolutionalNetwork(keras.layers.Layer):
         # Original paper suggests to use kernel size = 7,
         # which leads to excessive memory consumption.
         self._conv1 = keras.layers.Conv2D(18, 3, padding='same', activation='relu')
-        # Downsampling image size nearly doesn't reduce model time,
-        # but introduces problems with recalculation of splits positions.
         #self._pool1 = keras.layers.MaxPool2D()
         self._conv2 = keras.layers.Conv2D(18, 3, padding='same', activation='relu')
         self._conv3 = keras.layers.Conv2D(18, 3, padding='same', activation='relu')

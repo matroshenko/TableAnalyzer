@@ -80,7 +80,7 @@ def main(args):
     # For reproducible results.
     tf.random.set_seed(42)
     # For debugging it's better to see full stack trace.
-    tf.debugging.disable_traceback_filtering()
+    # tf.debugging.disable_traceback_filtering()
 
     model = Model()
     lr_schedule = keras.optimizers.schedules.ExponentialDecay(

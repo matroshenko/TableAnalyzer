@@ -15,8 +15,8 @@ class IntervalwiseFMeasure(keras.metrics.Metric):
         assert len(markup_mask.shape) == 2
         assert len(predicted_mask.shape) == 2
         for markup_mask_element, predicted_mask_element in zip(markup_mask, predicted_mask):
-            markup_intervals = get_intervals_of_ones(markup_mask_element)
-            predicted_intervals = get_intervals_of_ones(predicted_mask_element)
+            markup_intervals = get_intervals_of_ones(markup_mask_element.numpy())
+            predicted_intervals = get_intervals_of_ones(predicted_mask_element.numpy())
             matching_size = self._calculate_matching_size(markup_intervals, predicted_intervals)
 
             self.markup_intervals_count.assign_add(len(markup_intervals))

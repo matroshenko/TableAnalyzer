@@ -133,3 +133,6 @@ dmypy.json
 
 # Output of nohup command
 nohup.out
+
+# Profiling data
+profile.out

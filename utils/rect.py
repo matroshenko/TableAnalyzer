@@ -11,6 +11,9 @@ class Rect(object):
   def get_height(self):
     return self.bottom - self.top
 
+  def get_area(self):
+    return self.get_width() * self.get_height()
+
   def as_tuple(self):
     return (self.left, self.top, self.right, self.bottom)
 

@@ -52,8 +52,8 @@ class GridPoolingLayer(keras.layers.Layer):
     def _update_vector(self, grid, cell, vector, value):
         width = grid.get_bounding_rect().get_width()
         for i in range(cell.top, cell.bottom):
-            for j in range(cell.left, cell.right):
-                vector[i * width + j] = value
+            shift = i * width
+            vector[shift + cell.left : shift + cell.right] = value
 
     def _create_indices(self, grid):
         height = grid.get_bounding_rect().get_height()

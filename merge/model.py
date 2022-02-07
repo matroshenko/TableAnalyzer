@@ -160,7 +160,8 @@ class Model(keras.models.Model):
             'merge_down_probs1': merge_down_prob1,
             'merge_right_probs1': merge_right_prob1,
             'merge_down_probs2': merge_down_prob2,
-            'merge_right_probs2': merge_right_prob2
+            'merge_right_probs2': merge_right_prob2,
+            'markup_table': None
         }
 
     def compute_metrics(self, input_dict, targets_dict, prediction, sample_weight):

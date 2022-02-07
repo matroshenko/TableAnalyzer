@@ -21,10 +21,13 @@ class Rect(object):
     )
 
   def intersects(self, other):
-    return (
-      self.left < other.right and other.left < self.right
-      and self.top < other.bottom and other.top < self.bottom
-    )
+    return self.overlaps_horizonally(other) and self.overlaps_vertically(other)
+
+  def overlaps_horizonally(self, other):
+    return self.left < other.right and other.left < self.right
+  
+  def overlaps_vertically(self, other):
+    return self.top < other.bottom and other.top < self.bottom
 
   def __eq__(self, other):
     return self.as_tuple() == other.as_tuple()

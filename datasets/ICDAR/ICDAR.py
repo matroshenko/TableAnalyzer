@@ -164,9 +164,10 @@ class IcdarSplit(IcdarBase):
 class IcdarMerge(IcdarBase):
   """DatasetBuilder for training MERGE model."""
 
-  VERSION = tfds.core.Version('1.0.0')
+  VERSION = tfds.core.Version('1.0.1')
   RELEASE_NOTES = {
-      '1.0.0': 'Initial release.'
+      '1.0.0': 'Initial release.',
+      '1.0.1': 'Generate markup table.'
   }
 
   def __init__(self, split_checkpoint_path='checkpoints/split.ckpt', **kwargs):
@@ -185,7 +186,9 @@ class IcdarMerge(IcdarBase):
       'vert_split_points_binary': tfds.features.Tensor(shape=(None,), dtype=tf.int32),  
       # Ground truth masks    
       'merge_right_mask': tfds.features.Tensor(shape=(None, None), dtype=tf.bool, encoding='zlib'),
-      'merge_down_mask': tfds.features.Tensor(shape=(None, None), dtype=tf.bool, encoding='zlib')
+      'merge_down_mask': tfds.features.Tensor(shape=(None, None), dtype=tf.bool, encoding='zlib'),
+      # Ground truth table
+      'markup_table': tfds.features.Tensor(shape=(), dtype=tf.string)
     })
 
   def _get_single_example_dict(self, table_image, markup_table):
@@ -201,7 +204,8 @@ class IcdarMerge(IcdarBase):
       'horz_split_points_binary': h_binary,
       'vert_split_points_binary': v_binary,
       'merge_right_mask': merge_right_mask,
-      'merge_down_mask': merge_down_mask
+      'merge_down_mask': merge_down_mask,
+      'markup_table': markup_table.to_tensor().numpy()
     }
 
   def _get_split_model_outputs(self, table_image):

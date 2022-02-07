@@ -99,7 +99,7 @@ class AdjacencyFMeasure(keras.metrics.Metric):
                 if table_cell_intersections_counter[detected_cell] != 1:
                     continue
                 if detected_cell_rect.contains(text_rect):
-                    result[cell] = detected_cell
+                    result[text_rect] = detected_cell
 
         return result
 

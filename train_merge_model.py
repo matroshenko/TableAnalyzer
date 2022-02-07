@@ -45,7 +45,8 @@ def convert_ds_element_to_tuple(element):
             'merge_down_probs1': merge_down_mask,
             'merge_down_probs2': merge_down_mask,
             'merge_right_probs1': merge_right_mask,
-            'merge_right_probs2': merge_right_mask  
+            'merge_right_probs2': merge_right_mask,
+            'markup_table': element['markup_table']  
         }
     )
 
@@ -75,7 +76,7 @@ def main(args):
     # For reproducible results.
     tf.random.set_seed(42)
     # For debugging it's better to see full stack trace.
-    #tf.debugging.disable_traceback_filtering()
+    tf.debugging.disable_traceback_filtering()
 
     model = Model()
     lr_schedule = keras.optimizers.schedules.ExponentialDecay(

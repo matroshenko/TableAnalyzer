@@ -3,6 +3,11 @@ import tensorflow.keras as keras
 
 from merge.grid_pooling_layer import GridPoolingLayer
 from merge.concat_inputs_layer import ConcatInputsLayer
+from merge.adjacency_f_measure import AdjacencyFMeasure
+from datasets.ICDAR.markup_table import Table
+from table.grid_structure import GridStructureBuilder
+from table.cells_structure import CellsStructureBuilder
+from utils.rect import Rect
 
 class SharedFullyConvolutionalNetwork(keras.layers.Layer):
     def __init__(self):
@@ -126,6 +131,12 @@ class Model(keras.models.Model):
         self._combine_outputs1 = CombineOutputsLayer()
         self._combine_outputs2 = CombineOutputsLayer()
 
+        self._metric = AdjacencyFMeasure()
+
+        #self.output_names = [
+        #    'merge_down_probs1', 'merge_right_probs1', 
+        #    'merge_down_probs2', 'merge_right_probs2']
+
     def call(self, input_dict):
         image = input_dict['image']
         h_probs = input_dict['horz_split_points_probs']
@@ -151,3 +162,25 @@ class Model(keras.models.Model):
             'merge_down_probs2': merge_down_prob2,
             'merge_right_probs2': merge_right_prob2
         }
+
+    def compute_metrics(self, input_dict, targets_dict, prediction, sample_weight):
+        metric_results = super().compute_metrics(
+            input_dict, targets_dict, prediction, sample_weight)
+
+        markup_table = Table.from_tensor(targets_dict['markup_table'])
+
+        h_binary = tf.squeeze(input_dict['horz_split_points_binary'], axis=0).numpy()
+        v_binary = tf.squeeze(input_dict['vert_split_points_binary'], axis=0).numpy()
+        height = len(h_binary)
+        width = len(v_binary)
+        
+        grid = GridStructureBuilder(Rect(0, 0, width, height), h_binary, v_binary).build()
+
+        merge_down_mask = (tf.squeeze(prediction['merge_down_probs2'], axis=0) >= 0.5).numpy()
+        merge_right_mask = (tf.squeeze(prediction['merge_right_probs2'], axis=0) >= 0.5).numpy()
+        cells = CellsStructureBuilder(merge_right_mask, merge_down_mask).build()
+
+        self._metric.update_state(markup_table, grid, cells)
+        metric_results['AdjFMeasure'] = self._metric.result()
+
+        return metric_results        

@@ -100,4 +100,4 @@ class AdjacencyFMeasureTestCase(TestCase):
         self.assertEqual(metric.result(), 1)
 
 if __name__ == '__main__':
-    main()
+    main(module='test_adjacency_f_measure')

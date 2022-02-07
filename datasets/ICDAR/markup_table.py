@@ -44,7 +44,7 @@ class Table(object):
   def create_horz_split_points_mask(self):
     height = self.rect.bottom - self.rect.top
     shift = self.rect.top
-    result = np.zeros(shape=(height,), dtype=np.bool)
+    result = np.zeros(shape=(height,), dtype=bool)
 
     split_point_indexes = self._get_horz_split_points_indexes()
     assert len(split_point_indexes) >= 2
@@ -59,7 +59,7 @@ class Table(object):
   def create_vert_split_points_mask(self):
     width = self.rect.right - self.rect.left
     shift = self.rect.left
-    result = np.zeros(shape=(width,), dtype=np.bool)
+    result = np.zeros(shape=(width,), dtype=bool)
 
     split_point_indexes = self._get_vert_split_points_indexes()
     assert len(split_point_indexes) >= 2
@@ -76,8 +76,8 @@ class Table(object):
 
     n = grid.get_rows_count()
     m = grid.get_cols_count()
-    merge_right_mask = np.zeros(shape=(n, m-1), dtype=np.bool)
-    merge_down_mask = np.zeros(shape=(n-1, m), dtype=np.bool)
+    merge_right_mask = np.zeros(shape=(n, m-1), dtype=bool)
+    merge_down_mask = np.zeros(shape=(n-1, m), dtype=bool)
 
     for cell in self.cells:
       outer_rect = self._calculate_outer_rect(cell)

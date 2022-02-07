@@ -44,13 +44,13 @@ class TableTest(TestCase):
     def test_horz_split_points_mask(self):
         mask = self._table.create_horz_split_points_mask()
         expected_mask = np.array(
-            [0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0], dtype=np.bool)
+            [0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0], dtype=bool)
         self.assertTrue(np.all(mask == expected_mask))
 
     def test_vert_split_points_mask(self):
         mask = self._table.create_vert_split_points_mask()
         expected_mask = np.array(
-            [0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0], dtype=np.bool)
+            [0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0], dtype=bool)
         self.assertTrue(np.all(mask == expected_mask))
 
     def test_merge_masks(self):

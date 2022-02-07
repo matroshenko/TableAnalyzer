@@ -9,7 +9,7 @@ from table.grid_structure import GridStructure
 from utils.rect import Rect
 
 class AdjacencyFMeasureTestCase(TestCase):
-    def test_simple(self):
+    def test_split_cell(self):
         markup_cells = [
             Cell(Rect(1, 1, 3, 2), Rect(0, 0, 1, 1)), 
             Cell(Rect(5, 1, 11, 2), Rect(1, 0, 3, 1)),
@@ -34,7 +34,31 @@ class AdjacencyFMeasureTestCase(TestCase):
         metric = AdjacencyFMeasure()
         metric.update_state(markup_table, detected_grid, detected_cells)
 
+        # Recall = 8/11
+        # Precision = 8/12
         self.assertEqual(metric.result(), 16/23)
+
+    def test_split_column(self):
+        markup_cells = [
+            Cell(Rect(1, 1, 3, 2), Rect(0, 0, 1, 1)),
+            Cell(Rect(4, 3, 5, 4), Rect(0, 1, 1, 2)),
+            Cell(Rect(4, 5, 5, 6), Rect(0, 2, 1, 3))
+        ]
+        markup_table = Table(0, Rect(0, 0, 5, 7), markup_cells)
+
+        detected_grid = GridStructure([0, 2, 4, 7], [0, 4, 6])
+        detected_cells = [
+            Rect(0, 0, 1, 1), Rect(1, 0, 2, 1),
+            Rect(0, 1, 1, 2), Rect(1, 1, 2, 2),
+            Rect(0, 2, 1, 3), Rect(1, 2, 2, 3)
+        ]
+
+        metric = AdjacencyFMeasure()
+        metric.update_state(markup_table, detected_grid, detected_cells)
+
+        # Recall = 1/2
+        # Precision = 1
+        self.assertEqual(metric.result(), 2/3)
 
 if __name__ == '__main__':
     main()

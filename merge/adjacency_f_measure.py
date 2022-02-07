@@ -49,11 +49,12 @@ class AdjacencyFMeasure(keras.metrics.Metric):
         self._correct_adj_relations_count.assign_add(correct_adj_relations_count)
         self._detected_adj_relations_count.assign_add(detected_adj_relations_count)
 
-
     def result(self):
-        assert self._markup_adj_relations_count > 0
-        if self._detected_adj_relations_count == 0:
+        if self._correct_adj_relations_count == 0:
             return 0
+        
+        assert self._markup_adj_relations_count > 0
+        assert self._detected_adj_relations_count > 0
 
         recall = self._correct_adj_relations_count / self._markup_adj_relations_count
         precision = self._correct_adj_relations_count / self._detected_adj_relations_count

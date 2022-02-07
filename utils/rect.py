@@ -21,9 +21,9 @@ class Rect(object):
     )
 
   def intersects(self, other):
-    return self.overlaps_horizonally(other) and self.overlaps_vertically(other)
+    return self.overlaps_horizontally(other) and self.overlaps_vertically(other)
 
-  def overlaps_horizonally(self, other):
+  def overlaps_horizontally(self, other):
     return self.left < other.right and other.left < self.right
   
   def overlaps_vertically(self, other):

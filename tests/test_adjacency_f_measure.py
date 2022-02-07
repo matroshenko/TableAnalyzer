@@ -77,5 +77,27 @@ class AdjacencyFMeasureTestCase(TestCase):
         # Precision = 0/1
         self.assertEqual(metric.result(), 0)
 
+    def test_large(self):
+        rows_count = 10
+        cols_count = 10
+        
+        markup_cells = []
+        for i in range(rows_count):
+            for j in range(cols_count):
+                text_rect = Rect(3*j + 1, 3*i + 1, 3*j + 2, 3*i + 2)
+                grid_rect = Rect(j, i, j + 1, i + 1)
+                markup_cells.append(Cell(text_rect, grid_rect))
+        markup_table = Table(0, Rect(0, 0, 3*cols_count, 3*rows_count), markup_cells)
+
+        detected_grid = GridStructure(
+            [3*i for i in range(rows_count+1)], 
+            [3*j for j in range(cols_count+1)])
+        detected_cells = [cell.grid_rect for cell in markup_cells]
+
+        metric = AdjacencyFMeasure()
+        metric.update_state(markup_table, detected_grid, detected_cells)
+
+        self.assertEqual(metric.result(), 1)
+
 if __name__ == '__main__':
     main()

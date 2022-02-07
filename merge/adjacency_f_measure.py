@@ -26,7 +26,12 @@ class AdjacencyFMeasure(keras.metrics.Metric):
         self._detected_adj_relations_count = self.add_weight(
             'detected_adj_relations_count', initializer='zeros', dtype='int32')
 
-    def update_state(self, markup_table, detected_grid, detected_cells):
+    def update_state(self, *args, **kwargs):
+        # This function is wrapped in tf.function which slows down execution significantly.
+        # Call update_state_eager instead.
+        pass
+
+    def update_state_eager(self, markup_table, detected_grid, detected_cells):
         markup_adj_relations_list = self._create_markup_adj_relations_list(markup_table)
         markup_adj_relations_count = len(markup_adj_relations_list)
 

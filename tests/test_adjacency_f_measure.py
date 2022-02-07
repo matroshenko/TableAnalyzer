@@ -32,7 +32,7 @@ class AdjacencyFMeasureTestCase(TestCase):
         ]
 
         metric = AdjacencyFMeasure()
-        metric.update_state(markup_table, detected_grid, detected_cells)
+        metric.update_state_eager(markup_table, detected_grid, detected_cells)
 
         # Recall = 8/11
         # Precision = 8/12
@@ -54,7 +54,7 @@ class AdjacencyFMeasureTestCase(TestCase):
         ]
 
         metric = AdjacencyFMeasure()
-        metric.update_state(markup_table, detected_grid, detected_cells)
+        metric.update_state_eager(markup_table, detected_grid, detected_cells)
 
         # Recall = 1/2
         # Precision = 1
@@ -71,7 +71,7 @@ class AdjacencyFMeasureTestCase(TestCase):
         detected_cells = [Rect(0, 0, 1, 1), Rect(1, 0, 2, 1)]
 
         metric = AdjacencyFMeasure()
-        metric.update_state(markup_table, detected_grid, detected_cells)
+        metric.update_state_eager(markup_table, detected_grid, detected_cells)
 
         # Recall = 0/1
         # Precision = 0/1
@@ -95,7 +95,7 @@ class AdjacencyFMeasureTestCase(TestCase):
         detected_cells = [cell.grid_rect for cell in markup_cells]
 
         metric = AdjacencyFMeasure()
-        metric.update_state(markup_table, detected_grid, detected_cells)
+        metric.update_state_eager(markup_table, detected_grid, detected_cells)
 
         self.assertEqual(metric.result(), 1)
 

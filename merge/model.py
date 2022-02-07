@@ -168,7 +168,7 @@ class Model(keras.models.Model):
         metric_results = super().compute_metrics(
             input_dict, targets_dict, prediction, sample_weight)
 
-        markup_table = Table.from_tensor(targets_dict['markup_table'])
+        markup_table = Table.from_tensor(tf.squeeze(targets_dict['markup_table'], axis=0))
 
         h_binary = tf.squeeze(input_dict['horz_split_points_binary'], axis=0).numpy()
         v_binary = tf.squeeze(input_dict['vert_split_points_binary'], axis=0).numpy()

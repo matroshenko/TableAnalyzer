@@ -60,5 +60,22 @@ class AdjacencyFMeasureTestCase(TestCase):
         # Precision = 1
         self.assertEqual(metric.result(), 2/3)
 
+    def test_shifted_split_point(self):
+        markup_cells = [
+            Cell(Rect(1, 1, 3, 2), Rect(0, 0, 1, 1)),
+            Cell(Rect(5, 1, 7, 2), Rect(1, 0, 2, 1))
+        ]
+        markup_table = Table(0, Rect(0, 0, 8, 3), markup_cells)
+
+        detected_grid = GridStructure([0, 3], [0, 6, 8])
+        detected_cells = [Rect(0, 0, 1, 1), Rect(1, 0, 2, 1)]
+
+        metric = AdjacencyFMeasure()
+        metric.update_state(markup_table, detected_grid, detected_cells)
+
+        # Recall = 0/1
+        # Precision = 0/1
+        self.assertEqual(metric.result(), 0)
+
 if __name__ == '__main__':
     main()

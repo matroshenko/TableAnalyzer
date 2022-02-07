@@ -24,45 +24,38 @@ class GridPoolingLayer(keras.layers.Layer):
 
         grid = GridStructureBuilder(Rect(0, 0, width, height), h_mask_array, v_mask_array).build()
 
-        input = tf.reshape(input, shape=(height*width, channels))
-        multiplier = self._create_multiplier_vector(grid)
+        input = tf.squeeze(input, axis=0)
+        multiplier = self._create_reciprocal_cells_areas_matrix(grid)
         normalized_input = multiplier * input
 
-        means = tf.zeros(shape=(grid.get_rows_count() * grid.get_cols_count(), channels))
-        indices = self._create_indices(grid)
-        means = tf.tensor_scatter_nd_add(means, np.expand_dims(indices, 1), normalized_input)
+        means = tf.zeros(shape=(grid.get_rows_count(), grid.get_cols_count(), channels))
+        indices = self._create_indices_matrix(grid)
+        means = tf.tensor_scatter_nd_add(means, indices, normalized_input)
         
         if not self._keep_size:
-            return tf.reshape(means, shape=(1, grid.get_rows_count(), grid.get_cols_count(), channels))
+            return tf.expand_dims(means, axis=0)
 
-        result = tf.gather(means, indices)
-        return tf.reshape(result, shape=(1, height, width, channels))
+        result = tf.gather_nd(means, indices)
+        return tf.expand_dims(result, axis=0)
 
-    def _create_multiplier_vector(self, grid):
+    def _create_reciprocal_cells_areas_matrix(self, grid):
         height = grid.get_bounding_rect().get_height()
         width = grid.get_bounding_rect().get_width()
 
-        result = np.zeros(shape=(height * width, 1), dtype='float32')
+        result = np.zeros(shape=(height, width, 1), dtype='float32')
         for i in range(grid.get_rows_count()):
             for j in range(grid.get_cols_count()):
                 cell = grid.get_cell_rect(Rect(j, i, j+1, i+1))
-                self._update_vector(grid, cell, result, 1 / cell.get_area())
+                result[cell.top : cell.bottom, cell.left : cell.right] = 1 / cell.get_area()
         return result
 
-    def _update_vector(self, grid, cell, vector, value):
-        width = grid.get_bounding_rect().get_width()
-        for i in range(cell.top, cell.bottom):
-            shift = i * width
-            vector[shift + cell.left : shift + cell.right] = value
-
-    def _create_indices(self, grid):
+    def _create_indices_matrix(self, grid):
         height = grid.get_bounding_rect().get_height()
         width = grid.get_bounding_rect().get_width()
-        result = np.zeros(shape=(height * width,), dtype='int32')
+        result = np.zeros(shape=(height, width, 2), dtype='int32')
 
-        cols_count = grid.get_cols_count()
         for i in range(grid.get_rows_count()):
-            for j in range(cols_count):
+            for j in range(grid.get_cols_count()):
                 cell = grid.get_cell_rect(Rect(j, i, j+1, i+1))
-                self._update_vector(grid, cell, result, i * cols_count + j)
+                result[cell.top : cell.bottom, cell.left : cell.right] = [i, j]
         return result

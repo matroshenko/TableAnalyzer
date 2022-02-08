@@ -133,10 +133,6 @@ class Model(keras.models.Model):
 
         self._metric = AdjacencyFMeasure()
 
-        #self.output_names = [
-        #    'merge_down_probs1', 'merge_right_probs1', 
-        #    'merge_down_probs2', 'merge_right_probs2']
-
     def call(self, input_dict):
         image = input_dict['image']
         h_probs = input_dict['horz_split_points_probs']

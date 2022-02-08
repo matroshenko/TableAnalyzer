@@ -172,14 +172,14 @@ class Model(keras.models.Model):
 
         h_binary = tf.squeeze(input_dict['horz_split_points_binary'], axis=0).numpy()
         v_binary = tf.squeeze(input_dict['vert_split_points_binary'], axis=0).numpy()
-        height = len(h_binary)
-        width = len(v_binary)
         
-        grid = GridStructureBuilder(Rect(0, 0, width, height), h_binary, v_binary).build()
+        grid = GridStructureBuilder(markup_table.rect, h_binary, v_binary).build()
 
         merge_down_mask = (tf.squeeze(prediction['merge_down_probs2'], axis=0) >= 0.5).numpy()
         merge_right_mask = (tf.squeeze(prediction['merge_right_probs2'], axis=0) >= 0.5).numpy()
         cells = CellsStructureBuilder(merge_right_mask, merge_down_mask).build()
         self._metric.update_state_eager(markup_table, grid, cells)
+        
+        metric_results['adjacency_f_measure'] = self._metric.result()
         
         return metric_results        

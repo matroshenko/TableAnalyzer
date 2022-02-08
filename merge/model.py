@@ -3,7 +3,7 @@ import tensorflow.keras as keras
 
 from merge.grid_pooling_layer import GridPoolingLayer
 from merge.concat_inputs_layer import ConcatInputsLayer
-from merge.adjacency_f_measure import AdjacencyFMeasure
+from metrics.adjacency_f_measure import AdjacencyFMeasure
 from datasets.ICDAR.markup_table import Table
 from table.grid_structure import GridStructureBuilder
 from table.cells_structure import CellsStructureBuilder

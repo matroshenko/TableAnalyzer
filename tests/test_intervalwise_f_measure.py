@@ -3,7 +3,7 @@ import time
 import tensorflow as tf
 
 import context
-from split.intervalwise_f_measure import IntervalwiseFMeasure
+from metrics.intervalwise_f_measure import IntervalwiseFMeasure
 
 class IntervalwiseFMeasureTestCase(TestCase):
     def setUp(self):

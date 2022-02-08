@@ -3,7 +3,7 @@ import time
 import tensorflow as tf
 
 import context
-from merge.adjacency_f_measure import AdjacencyFMeasure
+from metrics.adjacency_f_measure import AdjacencyFMeasure
 from datasets.ICDAR.markup_table import Cell, Table
 from table.grid_structure import GridStructure
 from utils.rect import Rect

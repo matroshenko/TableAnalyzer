@@ -8,7 +8,7 @@ import tensorflow_datasets as tfds
 
 from datasets.ICDAR.ICDAR import IcdarSplit
 from split.model import Model
-from split.intervalwise_f_measure import IntervalwiseFMeasure
+from metrics.intervalwise_f_measure import IntervalwiseFMeasure
 
 def get_losses_dict():
     return {

@@ -3,6 +3,10 @@ import tensorflow.keras as keras
 
 from split.projection_layer import ProjectionLayer, ProjectionDirection
 from split.binarize_layer import BinarizeLayer
+from datasets.ICDAR.markup_table import Table
+from table.grid_structure import GridStructureBuilder
+from utils.rect import Rect
+from metrics.adjacency_f_measure import AdjacencyFMeasure
 
 
 class SharedFullyConvolutionalNetwork(keras.layers.Layer):
@@ -119,6 +123,8 @@ class Model(keras.models.Model):
         self._binarize_horz_splits_layer = BinarizeLayer(0.75)
         self._binarize_vert_splits_layer = BinarizeLayer(0.75)
 
+        self._metric = AdjacencyFMeasure()
+
     def call(self, input):
         input = self._normalize_image_layer(input)
         sfcn_output = self._sfcn(input)
@@ -134,5 +140,26 @@ class Model(keras.models.Model):
             'vert_split_points_probs1': vert_split_points_probs1,
             'vert_split_points_probs2': vert_split_points_probs2,
             'vert_split_points_probs3': vert_split_points_probs3,
-            'vert_split_points_binary': vert_split_points_binary
+            'vert_split_points_binary': vert_split_points_binary,
+            'markup_table': None
         }
+
+    def compute_metrics(self, input_dict, targets_dict, prediction, sample_weight):
+        metric_results = super().compute_metrics(
+            input_dict, targets_dict, prediction, sample_weight)
+
+        markup_table = Table.from_tensor(tf.squeeze(targets_dict['markup_table'], axis=0))
+
+        h_binary = tf.squeeze(prediction['horz_split_points_binary'], axis=0).numpy()
+        v_binary = tf.squeeze(prediction['vert_split_points_binary'], axis=0).numpy()
+        
+        grid = GridStructureBuilder(markup_table.rect, h_binary, v_binary).build()
+        cells = []
+        for i in range(grid.get_rows_count()):
+            for j in range(grid.get_cols_count()):
+                cells.append(Rect(j, i, j+1, i+1))
+
+        self._metric.update_state_eager(markup_table, grid, cells)
+        metric_results['adjacency_f_measure'] = self._metric.result()
+        
+        return metric_results 

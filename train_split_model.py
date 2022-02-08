@@ -8,7 +8,6 @@ import tensorflow_datasets as tfds
 
 from datasets.ICDAR.ICDAR import IcdarSplit
 from split.model import Model
-from metrics.intervalwise_f_measure import IntervalwiseFMeasure
 
 def get_losses_dict():
     return {
@@ -18,6 +17,7 @@ def get_losses_dict():
         'vert_split_points_probs1': keras.losses.BinaryCrossentropy(from_logits=False),
         'vert_split_points_probs2': keras.losses.BinaryCrossentropy(from_logits=False),
         'vert_split_points_probs3': keras.losses.BinaryCrossentropy(from_logits=False),
+        'markup_table': None
     }
 
 def get_losses_weights():
@@ -28,12 +28,7 @@ def get_losses_weights():
         'vert_split_points_probs1': 0.1,
         'vert_split_points_probs2': 0.25,
         'vert_split_points_probs3': 1,
-    }
-
-def get_metrics_dict():
-    return {
-        'horz_split_points_binary': IntervalwiseFMeasure(),
-        'vert_split_points_binary': IntervalwiseFMeasure(),
+        'markup_table': 0
     }
 
 def convert_ds_element_to_tuple(element):
@@ -50,7 +45,8 @@ def convert_ds_element_to_tuple(element):
             'vert_split_points_probs1': vert_split_points_mask,
             'vert_split_points_probs2': vert_split_points_mask,
             'vert_split_points_probs3': vert_split_points_mask,    
-            'vert_split_points_binary': vert_split_points_mask   
+            'vert_split_points_binary': vert_split_points_mask,
+            'markup_table': element['markup_table']   
         }
     )
 
@@ -95,8 +91,8 @@ def main(args):
     model.compile(
         keras.optimizers.Adam(lr_schedule), 
         loss=get_losses_dict(), 
-        loss_weights=get_losses_weights(),
-        metrics=get_metrics_dict(), run_eagerly=True)
+        loss_weights=get_losses_weights(), 
+        run_eagerly=True)
 
     ds_train, ds_test = tfds.load(
         'icdar_split',

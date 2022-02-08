@@ -14,8 +14,8 @@ class GridPoolingLayerTestCase(TestCase):
             [[20, 21], [22, 23], [24, 25], [26, 27], [28, 29]],
             [[30, 31], [32, 33], [34, 35], [36, 37], [38, 39]],
         ]], dtype='float32')
-        self.v_mask = tf.constant([[0, 0, 1, 0, 1]], dtype='int32')
-        self.h_mask = tf.constant([[0, 1, 0, 1]], dtype='int32')
+        self.h_positions = [1, 3]
+        self.v_positions = [2, 4]
 
     def test_pool_no_keep_size(self):
         expected_output = tf.constant([[
@@ -24,7 +24,7 @@ class GridPoolingLayerTestCase(TestCase):
             [[31, 32], [35, 36], [38, 39]]
         ]], dtype = 'float32')
         layer = GridPoolingLayer(False)
-        output = layer(self.input, self.h_mask, self.v_mask)
+        output = layer(self.input, self.h_positions, self.v_positions)
         self.assertTrue(tf.reduce_all(expected_output == output))
 
     def test_pool_keep_size(self):
@@ -35,7 +35,7 @@ class GridPoolingLayerTestCase(TestCase):
             [[31, 32], [31, 32], [35, 36], [35, 36], [38, 39]]
         ]], dtype = 'float32')
         layer = GridPoolingLayer(True)
-        output = layer(self.input, self.h_mask, self.v_mask)
+        output = layer(self.input, self.h_positions, self.v_positions)
         self.assertTrue(tf.reduce_all(expected_output == output))
 
 if __name__ == '__main__':

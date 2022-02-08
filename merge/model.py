@@ -7,6 +7,7 @@ from merge.adjacency_f_measure import AdjacencyFMeasure
 from datasets.ICDAR.markup_table import Table
 from table.grid_structure import GridStructureBuilder
 from table.cells_structure import CellsStructureBuilder
+from utils.interval import get_intervals_of_ones
 
 class SharedFullyConvolutionalNetwork(keras.layers.Layer):
     def __init__(self):
@@ -49,19 +50,19 @@ class GridPoolingNetworkBlock(keras.layers.Layer):
 
         self._concat2 = keras.layers.Concatenate()
 
-    def call(self, input, h_mask, v_mask):
+    def call(self, input, h_positions, v_positions):
         middle_result = self._concat1(
             [self._dilated_conv1(input), self._dilated_conv2(input), self._dilated_conv3(input)]
         )
 
         upper_result = self._upper_branch_conv(middle_result)
-        upper_result = self._upper_branch_pool(upper_result, h_mask, v_mask)
+        upper_result = self._upper_branch_pool(upper_result, h_positions, v_positions)
 
         lower_result = self._lower_branch_conv(middle_result)
         if self._should_output_predictions:
-            predictions = self._prediction_layer(lower_result, h_mask, v_mask)
+            predictions = self._prediction_layer(lower_result, h_positions, v_positions)
             predictions = tf.squeeze(predictions, axis=3)
-        lower_result = self._lower_branch_pool(lower_result, h_mask, v_mask)
+        lower_result = self._lower_branch_pool(lower_result, h_positions, v_positions)
 
         result = self._concat2([upper_result, middle_result, lower_result])
         if self._should_output_predictions:
@@ -79,12 +80,12 @@ class GridPoolingNetworkFinalBlock(keras.layers.Layer):
         self._conv1x1 = keras.layers.Conv2D(1, 1, activation='sigmoid')
         self._prediction_layer = GridPoolingLayer(False)
 
-    def call(self, input, h_mask, v_mask):
+    def call(self, input, h_positions, v_positions):
         result = self._concat(
             [self._dilated_conv1(input), self._dilated_conv2(input), self._dilated_conv3(input)]
         )
         result = self._conv1x1(result)
-        result = self._prediction_layer(result, h_mask, v_mask)
+        result = self._prediction_layer(result, h_positions, v_positions)
         result = tf.squeeze(result, axis=3)
         return result
 
@@ -96,10 +97,10 @@ class GridPoolingNetwork(keras.layers.Layer):
         self._block2 = GridPoolingNetworkBlock(True)
         self._block3 = GridPoolingNetworkFinalBlock()
 
-    def call(self, input, h_mask, v_mask):
-        block1_output = self._block1(input, h_mask, v_mask)
-        block2_output, probs1 = self._block2(block1_output, h_mask, v_mask)
-        probs2 = self._block3(block2_output, h_mask, v_mask)
+    def call(self, input, h_positions, v_positions):
+        block1_output = self._block1(input, h_positions, v_positions)
+        block2_output, probs1 = self._block2(block1_output, h_positions, v_positions)
+        probs2 = self._block3(block2_output, h_positions, v_positions)
         return probs1, probs2
 
 
@@ -138,15 +139,17 @@ class Model(keras.models.Model):
         v_probs = input_dict['vert_split_points_probs']
         h_binary = input_dict['horz_split_points_binary']
         v_binary = input_dict['vert_split_points_binary']
+        h_positions = self._get_intervals_centers(h_binary)
+        v_positions = self._get_intervals_centers(v_binary)
 
         normalized_image = self._normalize_image_layer(image)
         input = self._concat_inputs_layer(normalized_image, h_probs, v_probs, h_binary, v_binary)
         sfcn_output = self._sfcn(input)
         
-        up_prob1, up_prob2 = self._up_branch(sfcn_output, h_binary, v_binary)
-        down_prob1, down_prob2 = self._down_branch(sfcn_output, h_binary, v_binary)
-        left_prob1, left_prob2 = self._left_branch(sfcn_output, h_binary, v_binary)
-        right_prob1, right_prob2 = self._right_branch(sfcn_output, h_binary, v_binary)
+        up_prob1, up_prob2 = self._up_branch(sfcn_output, h_positions, v_positions)
+        down_prob1, down_prob2 = self._down_branch(sfcn_output, h_positions, v_positions)
+        left_prob1, left_prob2 = self._left_branch(sfcn_output, h_positions, v_positions)
+        right_prob1, right_prob2 = self._right_branch(sfcn_output, h_positions, v_positions)
 
         merge_down_prob1, merge_right_prob1 = self._combine_outputs1(up_prob1, down_prob1, left_prob1, right_prob1)
         merge_down_prob2, merge_right_prob2 = self._combine_outputs2(up_prob2, down_prob2, left_prob2, right_prob2)
@@ -177,4 +180,9 @@ class Model(keras.models.Model):
         
         metric_results['adjacency_f_measure'] = self._metric.result()
         
-        return metric_results        
+        return metric_results   
+
+    def _get_intervals_centers(self, mask):
+        mask = tf.squeeze(mask, axis=0).numpy()
+        return [interval.get_center() for interval in get_intervals_of_ones(mask)]
+            

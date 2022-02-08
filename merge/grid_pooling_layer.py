@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 import numpy as np
 
-from table.grid_structure import GridStructureBuilder
+from table.grid_structure import GridStructure
 from utils.rect import Rect
 
 
@@ -11,18 +11,15 @@ class GridPoolingLayer(keras.layers.Layer):
         super().__init__()
         self._keep_size = keep_size
 
-    def call(self, input, h_mask, v_mask):
+    def call(self, input, h_positions, v_positions):
         assert tf.executing_eagerly()
         assert input.shape[0] == 1
-
-        h_mask_array = tf.squeeze(h_mask, axis=0).numpy()
-        v_mask_array = tf.squeeze(v_mask, axis=0).numpy()
 
         height = input.shape[1]
         width = input.shape[2]
         channels = input.shape[3]
 
-        grid = GridStructureBuilder(Rect(0, 0, width, height), h_mask_array, v_mask_array).build()
+        grid = GridStructure([0] + h_positions + [height], [0] + v_positions + [width])
 
         input = tf.squeeze(input, axis=0)
         multiplier = self._create_reciprocal_cells_areas_matrix(grid)

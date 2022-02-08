@@ -17,6 +17,7 @@ class IcdarSplitTest(tfds.testing.DatasetBuilderTestCase):
   }
   # Split model can't run in graph mode.
   SKIP_TF1_GRAPH_MODE = True
+  SKIP_CHECKSUMS = True
 
   def _make_builder(self, config=None):
     return self.DATASET_CLASS(  # pylint: disable=not-callable

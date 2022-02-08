@@ -110,7 +110,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Trains SPLIT model.")
     parser.add_argument('result_file_path', help='Path to the file, where trained model will be serialized.')
     parser.add_argument('--epochs_count', default=10, type=int, help='Number of epochs to train.')
-    parser.add_argument('--initial_learning_rate', default=0.00075, help='Initial value of learning rate.')
+    parser.add_argument('--initial_learning_rate', default=0.00075, type=float, help='Initial value of learning rate.')
     parser.add_argument('--max_samples_count', default=None, type=int, 
         help='Max count of samples to train/test. May be used for debug purposes.')
     main(parser.parse_args())

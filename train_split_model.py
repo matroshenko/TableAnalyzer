@@ -82,7 +82,7 @@ def main(args):
     lr_schedule = keras.optimizers.schedules.ExponentialDecay(
         args.initial_learning_rate,
         decay_steps=80000,
-        decay_rate=0.075,
+        decay_rate=0.75,
         staircase=True)
 
     # Unfortunately you need to run model in eager mode,
@@ -96,14 +96,14 @@ def main(args):
 
     ds_train, ds_test = tfds.load(
         'icdar_split',
-        split=['train[:90%]', 'train[90%:]']
+        split=['train', 'test']
     )
     ds_train = build_data_pipeline(ds_train, Target.Train, args.max_samples_count)
     ds_test = build_data_pipeline(ds_test, Target.Test, args.max_samples_count)
 
     model.fit(
         ds_train, epochs=args.epochs_count, validation_data=ds_test,
-        callbacks=[get_tensorboard_callback()])
+        callbacks=[get_tensorboard_callback()], validation_freq=10)
     model.save_weights(args.result_file_path, save_format='h5')
 
 if __name__ == '__main__':

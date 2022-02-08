@@ -12,13 +12,9 @@ from metrics.adjacency_f_measure import AdjacencyFMeasure
 class SharedFullyConvolutionalNetwork(keras.layers.Layer):
     def __init__(self):
         super().__init__()
-        # Original paper suggests to use kernel size = 7,
-        # which leads to excessive memory consumption.
-
-        # TODO: replace filters count to 18
-        self._conv1 = keras.layers.Conv2D(48, 3, padding='same', activation='relu')
-        self._conv2 = keras.layers.Conv2D(48, 3, padding='same', activation='relu')
-        self._conv3 = keras.layers.Conv2D(48, 3, padding='same', activation='relu', dilation_rate=2)
+        self._conv1 = keras.layers.Conv2D(18, 7, padding='same', activation='relu')
+        self._conv2 = keras.layers.Conv2D(18, 7, padding='same', activation='relu')
+        self._conv3 = keras.layers.Conv2D(18, 7, padding='same', activation='relu', dilation_rate=2)
 
     def call(self, input):
         result = self._conv1(input)

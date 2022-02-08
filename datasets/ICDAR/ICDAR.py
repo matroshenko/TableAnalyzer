@@ -31,10 +31,10 @@ It should also contain any processing which has been applied (if any),
 _CITATION = """
 """
 
-#_FILES_TO_IGNORE = [
-#  'eu-015',  # cells lie outside page rect
-#  'us-035a',  # 2nd table has invalid cell coords
-#]
+_FILES_TO_IGNORE = [
+  ['competition-dataset-eu', 'eu-015'],  # cells lie outside page rect
+  ['competition-dataset-us', 'us-035a'],  # 2nd table has invalid cell coords
+]
 
 
 class IcdarBase(tfds.core.GeneratorBasedBuilder):
@@ -83,8 +83,8 @@ class IcdarBase(tfds.core.GeneratorBasedBuilder):
       pdf_file_path = pathlib.Path(pdf_file_path)
       parent_folder_name = pdf_file_path.parts[-2]
       stem = pdf_file_path.stem
-      #if stem in _FILES_TO_IGNORE:
-      #  continue
+      if [parent_folder_name, stem] in _FILES_TO_IGNORE:
+        continue
       
       region_file_path = pdf_file_path.with_name(stem + '-reg.xml')
       structure_file_path = pdf_file_path.with_name(stem + '-str.xml')

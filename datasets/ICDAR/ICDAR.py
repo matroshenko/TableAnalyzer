@@ -148,16 +148,19 @@ class IcdarBase(tfds.core.GeneratorBasedBuilder):
 class IcdarSplit(IcdarBase):
   """DatasetBuilder for training SPLIT model."""
 
-  VERSION = tfds.core.Version('1.0.0')
+  VERSION = tfds.core.Version('1.0.1')
   RELEASE_NOTES = {
-      '1.0.0': 'Initial release.'
+      '1.0.0': 'Initial release.',
+      '1.0.1': 'Generate markup table.'
   }
 
   def _get_features_dict(self):
     return tfds.features.FeaturesDict({
       'image': tfds.features.Image(shape=(None, None, 3)),
       'horz_split_points_mask': tfds.features.Tensor(shape=(None,), dtype=tf.bool),
-      'vert_split_points_mask': tfds.features.Tensor(shape=(None,), dtype=tf.bool)
+      'vert_split_points_mask': tfds.features.Tensor(shape=(None,), dtype=tf.bool),
+      # Ground truth table
+      'markup_table': tfds.features.Tensor(shape=(), dtype=tf.string)
     })
 
   def _get_single_example_dict(self, table_image, markup_table):
@@ -168,7 +171,8 @@ class IcdarSplit(IcdarBase):
     return {
       'image': self._image_to_byte_array(table_image),
       'horz_split_points_mask': horz_split_points_mask,
-      'vert_split_points_mask': vert_split_points_mask
+      'vert_split_points_mask': vert_split_points_mask,
+      'markup_table': markup_table.to_tensor().numpy()
     }
 
 

@@ -6,6 +6,7 @@ import io
 import os
 import glob
 import pathlib
+from itertools import chain
 
 import tensorflow_datasets as tfds
 import tensorflow as tf
@@ -30,10 +31,10 @@ It should also contain any processing which has been applied (if any),
 _CITATION = """
 """
 
-_FILES_TO_IGNORE = [
-  'eu-015',  # cells lie outside page rect
-  'us-035a',  # 2nd table has invalid cell coords
-]
+#_FILES_TO_IGNORE = [
+#  'eu-015',  # cells lie outside page rect
+#  'us-035a',  # 2nd table has invalid cell coords
+#]
 
 
 class IcdarBase(tfds.core.GeneratorBasedBuilder):
@@ -48,7 +49,7 @@ class IcdarBase(tfds.core.GeneratorBasedBuilder):
         features=self._get_features_dict(),
         homepage='https://www.tamirhassan.com/html/dataset.html',
         citation=_CITATION,
-        disable_shuffling=False
+        disable_shuffling=True
     )
 
   @abstractmethod
@@ -59,11 +60,20 @@ class IcdarBase(tfds.core.GeneratorBasedBuilder):
   def _split_generators(self, dl_manager: tfds.download.DownloadManager):
     """Returns SplitGenerators."""
 
-    path = dl_manager.download_and_extract(
-      'https://www.tamirhassan.com/html/files/icdar2013-competition-dataset-with-gt.zip')
+    pathes = dl_manager.download_and_extract(
+      ['https://www.tamirhassan.com/html/files/eu-dataset-20130324.zip',
+      'https://www.tamirhassan.com/html/files/us-gov-dataset-20130324.zip',
+      'https://www.tamirhassan.com/html/files/icdar2013-competition-dataset-with-gt.zip'])
+
+    if not isinstance(pathes, list):
+      # During unit-testing dl_manager will return path to dummy_data.
+      return {'train': self._generate_examples(pathes)}
 
     return {
-        'train': self._generate_examples(path)
+        'train': chain(
+          self._generate_examples(pathes[0]), 
+          self._generate_examples(pathes[1])),
+        'test': self._generate_examples(pathes[2])
     }
 
   def _generate_examples(self, path):
@@ -71,16 +81,17 @@ class IcdarBase(tfds.core.GeneratorBasedBuilder):
 
     for pdf_file_path in glob.glob(os.path.join(path, '**/*.pdf'), recursive=True):
       pdf_file_path = pathlib.Path(pdf_file_path)
+      parent_folder_name = pdf_file_path.parts[-2]
       stem = pdf_file_path.stem
-      if stem in _FILES_TO_IGNORE:
-        continue
+      #if stem in _FILES_TO_IGNORE:
+      #  continue
       
       region_file_path = pdf_file_path.with_name(stem + '-reg.xml')
       structure_file_path = pdf_file_path.with_name(stem + '-str.xml')
 
       pages = pdf2image.convert_from_path(pdf_file_path, dpi=72)
       for page_number, table in self._generate_tables(pages, region_file_path, structure_file_path):
-        key = '{}-{}'.format(stem, table.id)
+        key = '{}-{}-{}'.format(parent_folder_name, stem, table.id)
         page = pages[page_number]
         table_image = page.crop(table.rect.as_tuple())
         yield key, self._get_single_example_dict(table_image, table)

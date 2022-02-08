@@ -149,6 +149,10 @@ class Model(keras.models.Model):
         h_binary = tf.squeeze(prediction['horz_split_points_binary'], axis=0).numpy()
         v_binary = tf.squeeze(prediction['vert_split_points_binary'], axis=0).numpy()
         
+        # Uncomment if you want to know max possible value of metric.
+        #h_binary = tf.squeeze(targets_dict['horz_split_points_binary'], axis=0).numpy()
+        #v_binary = tf.squeeze(targets_dict['vert_split_points_binary'], axis=0).numpy()
+
         grid = GridStructureBuilder(markup_table.rect, h_binary, v_binary).build()
         cells = []
         for i in range(grid.get_rows_count()):

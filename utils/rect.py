@@ -1,5 +1,6 @@
 class Rect(object):
   def __init__(self, left, top, right, bottom):
+    assert left <= right and top <= bottom
     self.left = left
     self.top = top
     self.right = right

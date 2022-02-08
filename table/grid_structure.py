@@ -6,8 +6,8 @@ class GridStructure(object):
     def __init__(self, h_positions, v_positions):
         assert len(h_positions) >= 2
         assert len(v_positions) >= 2
-        assert all(h_positions[i] < h_positions[i+1] for i in range(len(h_positions) - 1))
-        assert all(v_positions[i] < v_positions[i+1] for i in range(len(v_positions) - 1))
+        assert all(h_positions[i] <= h_positions[i+1] for i in range(len(h_positions) - 1))
+        assert all(v_positions[i] <= v_positions[i+1] for i in range(len(v_positions) - 1))
 
         self._h_positions = h_positions
         self._v_positions = v_positions

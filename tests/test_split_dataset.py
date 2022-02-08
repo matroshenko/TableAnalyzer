@@ -12,6 +12,7 @@ class IcdarSplitTest(tfds.testing.DatasetBuilderTestCase):
   SPLITS = {
       'train': 15  # Number of fake train example
   }
+  SKIP_CHECKSUMS = True
 
 
 if __name__ == '__main__':

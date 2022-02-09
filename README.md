@@ -12,23 +12,20 @@ Run with `--help` argument to view usage info.
 
 # Results
 
-We have trained SPLIT model on GPU (NVIDIA GeForce GTX 1080 Ti) for 100 epochs and obtained following results on validation set:
+As the main metric we used ajacency F-score (see [article](https://www.researchgate.net/publication/233954637_A_Methodology_for_Evaluating_Algorithms_for_Table_Understanding_in_PDF_Documents) for more details).
+We have trained our models on GPU (NVIDIA GeForce GTX 1080 Ti) for 100 epochs and obtained following results:
 
-|                   | Intervalwise F-score |
-| ----------------- | -------------------- |
-| Horz split points | 0.9668               |
-| Vert split points | 0.9600               |
-
-We have trained MERGE model for 100 epochs and obtained val_loss = 0.1372.
+|                   | Train          | Test   |
+| ----------------- | ---------------|--------|
+| SPLIT             | 0.8863         | 0.5267 |
+| SPLIT + MERGE     | 0.8982         | 0.5295 |
+| Num of tables     | 81             | 148    |
 
 # Images
 
 ![](images/merge_model_predictions.png)
-Fig 1. SPLIT+MERGE model predictions on validation dataset.
+Fig 1. SPLIT + MERGE model predictions on training set.
 
 # Conclusion
 
-As we see, SPLIT architecture generalizes pretty well, even when trained on such a sparse dataset.
-
-MERGE architecture failed to generalize well, because there is not enough spanning cells in training dataset.
-As we know from the original paper, simple heuristic postprocessing works much better.
+More training data will be helpful to decrease the gap between train and test error.

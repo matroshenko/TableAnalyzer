@@ -34,6 +34,12 @@ _CITATION = """
 _FILES_TO_IGNORE = [
   ['competition-dataset-eu', 'eu-015'],  # cells lie outside page rect
   ['competition-dataset-us', 'us-035a'],  # 2nd table has invalid cell coords
+  ['eu-dataset', 'eu-032'], # 2nd table has invalid cell coords
+  ['eu-dataset', 'eu-014'], # invalid cell text rect
+  ['eu-dataset', 'eu-023'], # invalid cell text rect
+  ['us-gov-dataset', 'us-025'], # invalid cell text rect
+  ['us-gov-dataset', 'us-012'], # invalid cell text rect
+  ['us-gov-dataset', 'us-020'], # invalid cell text rect
 ]
 
 
@@ -135,6 +141,7 @@ class IcdarBase(tfds.core.GeneratorBasedBuilder):
     col_end = int(xml_node.get('end-col', col_start))
     row_start = int(xml_node.get('start-row'))
     row_end = int(xml_node.get('end-row', row_start))
+    assert col_start <= col_end and row_start <= row_end
     grid_rect = Rect(col_start, row_start, col_end + 1, row_end + 1)
     return Cell(text_rect, grid_rect)
 

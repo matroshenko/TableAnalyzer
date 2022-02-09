@@ -6,6 +6,9 @@ class Rect(object):
     self.right = right
     self.bottom = bottom
 
+  def is_empty(self):
+    return self.left == self.right or self.top == self.bottom
+
   def get_width(self):
     return self.right - self.left
 

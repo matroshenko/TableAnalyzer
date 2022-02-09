@@ -43,6 +43,8 @@ class GridPoolingLayer(keras.layers.Layer):
         for i in range(grid.get_rows_count()):
             for j in range(grid.get_cols_count()):
                 cell = grid.get_cell_rect(Rect(j, i, j+1, i+1))
+                if cell.is_empty():
+                    continue
                 result[cell.top : cell.bottom, cell.left : cell.right] = 1 / cell.get_area()
         return result
 

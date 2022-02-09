@@ -1,4 +1,5 @@
 from PIL import Image, ImageDraw
+from matplotlib.pyplot import text
 
 from utils.rect import Rect
 from table.grid_structure import GridStructureBuilder
@@ -37,3 +38,19 @@ def create_merge_result_image(
         rect = grid_structure.get_cell_rect(cell)
         draw.rectangle(rect.as_tuple(), outline=(255, 0, 0))
     return result_image
+
+def create_markup_text_image(table_image, markup_table):
+    markup_text_image = table_image.copy()
+    draw = ImageDraw.Draw(markup_text_image)
+
+    left = markup_table.rect.left
+    top = markup_table.rect.top
+    for cell in markup_table.cells:
+        text_rect = cell.text_rect
+        text_rect.left -= left
+        text_rect.right -= left
+        text_rect.top -= top
+        text_rect.bottom -= top
+        draw.rectangle(text_rect.as_tuple(), fill=(255, 0, 0))
+
+    return Image.blend(table_image, markup_text_image, 0.5)

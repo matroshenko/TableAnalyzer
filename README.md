@@ -28,4 +28,4 @@ Fig 1. SPLIT + MERGE model predictions on training set.
 
 # Conclusion
 
-More training data will be helpful to decrease the gap between train and test error.
+More training data will be helpful to decrease variance.

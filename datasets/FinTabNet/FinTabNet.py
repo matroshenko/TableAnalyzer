@@ -3,9 +3,6 @@
 from abc import abstractmethod
 import xml.etree.ElementTree as ET
 import io
-import os
-import glob
-import pathlib
 import json
 
 import tensorflow_datasets as tfds
@@ -18,6 +15,7 @@ from datasets.ICDAR.markup_table import Cell, Table
 from utils.rect import Rect
 from table.grid_structure import GridStructureBuilder
 from split.model import Model
+from utils.visualization import create_split_result_image
 
 
 # TODO(ICDAR): Markdown description  that will appear on the catalog page.
@@ -76,15 +74,19 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
         pdf_file_name = jsonl_file_name.parent / 'pdf' / sample['filename']
         pdf_height, pdf_width = self._get_pdf_file_shape(pdf_file_name)
 
-        table_rect = self._bbox_to_rect(pdf_height, sample['bbox'])
-        table_image = self._get_table_image(pdf_file_name, table_rect)
-
         cells = self._get_markup_cells(
           pdf_height, 
           sample['html']['structure']['tokens'], 
           sample['html']['cells'])
+        table_rect = self._get_bounding_rect(cells)
         table_id = sample['table_id']
         table = Table(table_id, table_rect, cells)
+        table_image = self._get_table_image(pdf_file_name, table_rect)
+
+        # Uncomment to debug.
+        #create_split_result_image(
+        #  table_image, table.create_horz_split_points_mask(), 
+        #  table.create_vert_split_points_mask()).save('{}.png'.format(table_id))
         yield table_id, self._get_single_example_dict(table_image, table)
 
   @abstractmethod
@@ -144,6 +146,12 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
         cell_annotation_idx += 1
         cell_idx += 1
 
+    return result
+
+  def _get_bounding_rect(self, cells):
+    result = cells[0].text_rect
+    for cell in cells:
+      result |= cell.text_rect
     return result
 
   def _image_to_byte_array(self, image):

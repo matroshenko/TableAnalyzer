@@ -58,24 +58,22 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
 
     path = dl_manager.download_and_extract(
       'https://dax-cdn.cdn.appdomain.cloud/dax-fintabnet/1.0.0/fintabnet.tar.gz')
+    if path.stem == 'dummy_data':
+      return {'val': self._generate_examples(path / 'FinTabNet_1.0.0_table_example.jsonl')}
 
     return {
-        'train': self._generate_examples(path, 'train'),
-        'val': self._generate_examples(path, 'val'),
-        'test': self._generate_examples(path, 'test')
+        'train': self._generate_examples(path / 'FinTabNet_1.0.0_table_train.jsonl'),
+        'val': self._generate_examples(path / 'FinTabNet_1.0.0_table_val.jsonl'),
+        'test': self._generate_examples(path / 'FinTabNet_1.0.0_table_test.jsonl')
     }
 
-  def _generate_examples(self, path, split):
+  def _generate_examples(self, jsonl_file_name):
     """Yields examples for specified split."""
 
-    jsonl_file_name = path / 'FinTabNet_1.0.0_table_example.jsonl'
     with tf.io.gfile.GFile(jsonl_file_name, 'r') as f:
       for line in f:
         sample = json.loads(line)
-        if sample['split'] != split:
-          continue
-
-        pdf_file_name = path / 'pdf' / sample['filename']
+        pdf_file_name = jsonl_file_name.parent / 'pdf' / sample['filename']
         pdf_height, pdf_width = self._get_pdf_file_shape(pdf_file_name)
 
         table_rect = self._bbox_to_rect(pdf_height, sample['bbox'])

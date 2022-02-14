@@ -32,17 +32,6 @@ It should also contain any processing which has been applied (if any),
 _CITATION = """
 """
 
-_FILES_TO_IGNORE = [
-  ['competition-dataset-eu', 'eu-015'],  # cells lie outside page rect
-  ['competition-dataset-us', 'us-035a'],  # 2nd table has invalid cell coords
-  ['eu-dataset', 'eu-032'], # 2nd table has invalid cell coords
-  ['eu-dataset', 'eu-014'], # invalid cell text rect
-  ['eu-dataset', 'eu-023'], # invalid cell text rect
-  ['us-gov-dataset', 'us-025'], # invalid cell text rect
-  ['us-gov-dataset', 'us-012'], # invalid cell text rect
-  ['us-gov-dataset', 'us-020'], # invalid cell text rect
-]
-
 
 class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
   """Base DatasetBuilder for FinTabNet datasets."""

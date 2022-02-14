@@ -12,6 +12,7 @@ import tensorflow_datasets as tfds
 import tensorflow as tf
 import pdf2image
 from PyPDF2 import PdfFileReader
+import numpy as np
 
 from datasets.ICDAR.markup_table import Cell, Table
 from utils.rect import Rect
@@ -122,9 +123,38 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
     page = pdf2image.convert_from_path(pdf_file_name, size=(pdf_width, pdf_height))[0]
     return page.crop(table_rect.as_tuple())
 
-  def _get_markup_cells(self, page_height, html_tokens, cells):
-    # TODO
-    pass
+  def _get_markup_cells(self, page_height, html_tokens, cells_annotations):
+    table_tree = ET.fromstring(''.join(html_tokens))
+    rows_count = len(table_tree)
+    cols_count = sum(cell.get('colspan', 1) for cell in table_tree[0])
+
+    result = []
+
+    visited_grid_cells = np.zeros(shape=(rows_count, cols_count), dtype=bool)
+    cell_annotation_idx = 0
+    for grid_row_idx in range(rows_count):
+      row_branch = table_tree[grid_row_idx]
+      cell_idx = 0
+      for grid_col_idx in range(cols_count):
+        if visited_grid_cells[grid_row_idx][grid_col_idx]:
+          continue
+        cell_element = row_branch[cell_idx]
+        col_span = cell_element.get('colspan', 1)
+        row_span = cell_element.get('rowspan', 1)
+        grid_rect = Rect(
+          grid_col_idx, grid_row_idx, 
+          grid_col_idx + col_span, grid_row_idx + row_span)
+        annotation = cells_annotations[cell_annotation_idx]
+        # Empty cells do not have bounding boxes.
+        if annotation['tokens']:
+          text_rect = self._bbox_to_rect(page_height, annotation['bbox'])
+          result.append(Cell(text_rect, grid_rect))
+
+        visited_grid_cells[grid_rect.top:grid_rect.bottom][grid_rect.left:grid_rect.right] = True
+        cell_annotation_idx += 1
+        cell_idx += 1
+
+    return result
 
   def _image_to_byte_array(self, image):
     imgByteArr = io.BytesIO()

@@ -12,6 +12,7 @@ class FinTabNetSplitTest(tfds.testing.DatasetBuilderTestCase):
   SPLITS = {
       'val': 16  # Number of fake train example
   }
+  SKIP_TF1_GRAPH_MODE = True
   SKIP_CHECKSUMS = True
 
 

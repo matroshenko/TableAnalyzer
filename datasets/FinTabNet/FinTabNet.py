@@ -138,9 +138,7 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
           grid_col_idx + col_span, grid_row_idx + row_span)
         annotation = cells_annotations[cell_annotation_idx]
         # Empty cells do not have bounding boxes.
-        cell_text = ''.join(annotation['tokens']).strip()
-        if cell_text != '':
-          assert 'bbox' in annotation
+        if 'bbox' in annotation:
           text_rect = self._bbox_to_rect(page_height, annotation['bbox'])
           result.append(Cell(text_rect, grid_rect))
 

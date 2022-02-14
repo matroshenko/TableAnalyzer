@@ -79,7 +79,10 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
         table_rect = self._bbox_to_rect(pdf_height, sample['bbox'])
         table_image = self._get_table_image(pdf_file_name, table_rect)
 
-        cells = self._get_markup_cells(pdf_height, sample['html']['structure']['tokens'], sample['cells'])
+        cells = self._get_markup_cells(
+          pdf_height, 
+          sample['html']['structure']['tokens'], 
+          sample['html']['cells'])
         table_id = sample['table_id']
         table = Table(table_id, table_rect, cells)
         yield table_id, self._get_single_example_dict(table_image, table)
@@ -113,7 +116,7 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
   def _get_markup_cells(self, page_height, html_tokens, cells_annotations):
     table_tree = ET.fromstring(''.join(html_tokens))
     rows_count = len(table_tree)
-    cols_count = sum(cell.get('colspan', 1) for cell in table_tree[0])
+    cols_count = sum(int(cell.get('colspan', 1)) for cell in table_tree[0])
 
     result = []
 
@@ -126,8 +129,8 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
         if visited_grid_cells[grid_row_idx][grid_col_idx]:
           continue
         cell_element = row_branch[cell_idx]
-        col_span = cell_element.get('colspan', 1)
-        row_span = cell_element.get('rowspan', 1)
+        col_span = int(cell_element.get('colspan', 1))
+        row_span = int(cell_element.get('rowspan', 1))
         grid_rect = Rect(
           grid_col_idx, grid_row_idx, 
           grid_col_idx + col_span, grid_row_idx + row_span)
@@ -137,7 +140,7 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
           text_rect = self._bbox_to_rect(page_height, annotation['bbox'])
           result.append(Cell(text_rect, grid_rect))
 
-        visited_grid_cells[grid_rect.top:grid_rect.bottom][grid_rect.left:grid_rect.right] = True
+        visited_grid_cells[grid_rect.top:grid_rect.bottom, grid_rect.left:grid_rect.right] = True
         cell_annotation_idx += 1
         cell_idx += 1
 

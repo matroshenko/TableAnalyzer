@@ -31,6 +31,10 @@ _CITATION = """
 """
 
 
+class MarkupError(Exception):
+  pass
+
+
 class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
   """Base DatasetBuilder for FinTabNet datasets."""
 
@@ -74,10 +78,14 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
         pdf_file_name = jsonl_file_name.parent / 'pdf' / sample['filename']
         pdf_height, pdf_width = self._get_pdf_file_shape(pdf_file_name)
 
-        cells = self._get_markup_cells(
-          pdf_height, 
-          sample['html']['structure']['tokens'], 
-          sample['html']['cells'])
+        try:
+          cells = self._get_markup_cells(
+            pdf_height, 
+            sample['html']['structure']['tokens'], 
+            sample['html']['cells'])
+        except MarkupError:
+          continue
+
         table_rect = self._get_bounding_rect(cells)
         table_id = sample['table_id']
         table = Table(table_id, table_rect, cells)
@@ -103,12 +111,14 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
     return pdf_height, pdf_width
 
   def _bbox_to_rect(self, page_height, bbox):
-    return Rect(
-      int(bbox[0]),
-      int(page_height - bbox[3]),
-      int(bbox[2]),
-      int(page_height - bbox[1])
-    )
+    left = int(bbox[0])
+    top = int(page_height - bbox[3])
+    right = int(bbox[2])
+    bottom = int(page_height - bbox[1])
+    if left > right or top > bottom:
+      raise MarkupError
+
+    return Rect(left, top, right, bottom)
 
   def _get_table_image(self, pdf_file_name, table_rect):
     pdf_height, pdf_width = self._get_pdf_file_shape(pdf_file_name)

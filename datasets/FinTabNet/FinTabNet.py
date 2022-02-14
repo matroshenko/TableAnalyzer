@@ -75,19 +75,22 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
     with tf.io.gfile.GFile(jsonl_file_name, 'r') as f:
       for line in f:
         sample = json.loads(line)
+        table_id = sample['table_id']
+
         pdf_file_name = jsonl_file_name.parent / 'pdf' / sample['filename']
         pdf_height, pdf_width = self._get_pdf_file_shape(pdf_file_name)
 
         try:
-          cells = self._get_markup_cells(
+          cells, rows_count, cols_count = self._get_markup_cells(
             pdf_height, 
             sample['html']['structure']['tokens'], 
             sample['html']['cells'])
+          self._check_no_empty_column(cols_count, cells)
+          
         except MarkupError:
           continue
 
         table_rect = self._get_bounding_rect(cells)
-        table_id = sample['table_id']
         table = Table(table_id, table_rect, cells)
         table_image = self._get_table_image(pdf_file_name, table_rect)
 
@@ -156,7 +159,16 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
         cell_annotation_idx += 1
         cell_idx += 1
 
-    return result
+    return result, rows_count, cols_count
+
+  def _check_no_empty_column(self, cols_count, cells):
+    for col_idx in range(cols_count):
+      column_cells = []
+      for cell in cells:
+        if cell.grid_rect.left == col_idx and cell.grid_rect.right == col_idx + 1:
+          column_cells.append(cell)
+      if not column_cells:
+        raise MarkupError
 
   def _get_bounding_rect(self, cells):
     result = cells[0].text_rect

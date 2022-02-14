@@ -98,8 +98,8 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
     with tf.io.gfile.GFile(pdf_file_name, 'rb') as pdf_file:
       pdf_page = PdfFileReader(pdf_file).getPage(0)
       pdf_shape = pdf_page.mediaBox
-      pdf_height = pdf_shape[3]-pdf_shape[1]
-      pdf_width = pdf_shape[2]-pdf_shape[0]
+      pdf_height = round(pdf_shape[3]-pdf_shape[1])
+      pdf_width = round(pdf_shape[2]-pdf_shape[0])
     return pdf_height, pdf_width
 
   def _bbox_to_rect(self, page_height, bbox):

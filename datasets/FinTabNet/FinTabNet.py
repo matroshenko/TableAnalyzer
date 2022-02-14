@@ -6,11 +6,12 @@ import io
 import os
 import glob
 import pathlib
-from itertools import chain
+import json
 
 import tensorflow_datasets as tfds
 import tensorflow as tf
 import pdf2image
+from PyPDF2 import PdfFileReader
 
 from datasets.ICDAR.markup_table import Cell, Table
 from utils.rect import Rect
@@ -42,8 +43,8 @@ _FILES_TO_IGNORE = [
 ]
 
 
-class IcdarBase(tfds.core.GeneratorBasedBuilder):
-  """Base DatasetBuilder for ICDAR datasets."""
+class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
+  """Base DatasetBuilder for FinTabNet datasets."""
 
   def _info(self) -> tfds.core.DatasetInfo:
     """Returns the dataset metadata."""
@@ -52,7 +53,7 @@ class IcdarBase(tfds.core.GeneratorBasedBuilder):
         builder=self,
         description=_DESCRIPTION,
         features=self._get_features_dict(),
-        homepage='https://www.tamirhassan.com/html/dataset.html',
+        homepage='https://developer.ibm.com/exchanges/data/all/fintabnet/',
         citation=_CITATION,
         disable_shuffling=True
     )
@@ -65,84 +66,65 @@ class IcdarBase(tfds.core.GeneratorBasedBuilder):
   def _split_generators(self, dl_manager: tfds.download.DownloadManager):
     """Returns SplitGenerators."""
 
-    pathes = dl_manager.download_and_extract(
-      ['https://www.tamirhassan.com/html/files/eu-dataset-20130324.zip',
-      'https://www.tamirhassan.com/html/files/us-gov-dataset-20130324.zip',
-      'https://www.tamirhassan.com/html/files/icdar2013-competition-dataset-with-gt.zip'])
-
-    if not isinstance(pathes, list):
-      # During unit-testing dl_manager will return path to dummy_data.
-      return {'train': self._generate_examples(pathes)}
+    path = dl_manager.download_and_extract(
+      'https://dax-cdn.cdn.appdomain.cloud/dax-fintabnet/1.0.0/fintabnet.tar.gz')
 
     return {
-        'train': chain(
-          self._generate_examples(pathes[0]), 
-          self._generate_examples(pathes[1])),
-        'test': self._generate_examples(pathes[2])
+        'train': self._generate_examples(path, 'train'),
+        'val': self._generate_examples(path, 'val'),
+        'test': self._generate_examples(path, 'test')
     }
 
-  def _generate_examples(self, path):
-    """Yields examples."""
+  def _generate_examples(self, path, split):
+    """Yields examples for specified split."""
 
-    for pdf_file_path in glob.glob(os.path.join(path, '**/*.pdf'), recursive=True):
-      pdf_file_path = pathlib.Path(pdf_file_path)
-      parent_folder_name = pdf_file_path.parts[-2]
-      stem = pdf_file_path.stem
-      if [parent_folder_name, stem] in _FILES_TO_IGNORE:
-        continue
-      
-      region_file_path = pdf_file_path.with_name(stem + '-reg.xml')
-      structure_file_path = pdf_file_path.with_name(stem + '-str.xml')
+    jsonl_file_name = os.path.join(path, 'FinTabNet_1.0.0_table_example.jsonl')
+    with open(jsonl_file_name, 'r') as f:
+      for line in f:
+        sample = json.loads(line)
+        if sample['split'] != split:
+          continue
 
-      pages = pdf2image.convert_from_path(pdf_file_path, dpi=72)
-      for page_number, table in self._generate_tables(pages, region_file_path, structure_file_path):
-        key = '{}-{}-{}'.format(parent_folder_name, stem, table.id)
-        page = pages[page_number]
-        table_image = page.crop(table.rect.as_tuple())
-        yield key, self._get_single_example_dict(table_image, table)
+        pdf_file_name = os.path.join(path, 'pdf', sample['filename'])
+        pdf_height, pdf_width = self._get_pdf_file_shape(pdf_file_name)
+
+        table_rect = self._bbox_to_rect(pdf_height, sample['bbox'])
+        table_image = self._get_table_image(pdf_file_name, table_rect)
+
+        cells = self._get_markup_cells(pdf_height, sample['html']['structure']['tokens'], sample['cells'])
+        table_id = sample['table_id']
+        table = Table(table_id, table_rect, cells)
+        yield table_id, self._get_single_example_dict(table_image, table)
 
   @abstractmethod
   def _get_single_example_dict(self, table_image, markup_table):
     """Returns dict with nessary inputs for the model."""
     pass
 
-  def _generate_tables(self, pages, region_file_path, structure_file_path):
-    regions_tree = ET.parse(region_file_path)
-    structures_tree = ET.parse(structure_file_path)
-    for table_node, table_structure_node in zip(regions_tree.getroot(), structures_tree.getroot()):
-      table_id = int(table_node.get('id'))
-      region_node = table_node.find('region')
-      page_number = int(region_node.get('page')) - 1
-      page_width, page_height = pages[page_number].size
-      table_rect = self._get_bounding_box(page_width, page_height, region_node)
-      cells_node = table_structure_node.find('region')
-      cells = [self._get_cell(page_width, page_height, node) for node in cells_node]
+  def _get_pdf_file_shape(self, pdf_file_name):
+    with open(pdf_file_name, 'rb') as pdf_file:
+      pdf_page = PdfFileReader(pdf_file).getPage(0)
+      pdf_shape = pdf_page.mediaBox
+      pdf_height = pdf_shape[3]-pdf_shape[1]
+      pdf_width = pdf_shape[2]-pdf_shape[0]
+    return pdf_height, pdf_width
 
-      yield page_number, Table(table_id, table_rect, cells)
+  def _bbox_to_rect(self, page_height, bbox):
+    return Rect(
+      int(bbox[0]),
+      int(page_height - bbox[3]),
+      int(bbox[2]),
+      int(page_height - bbox[1])
+    )
 
-  def _get_bounding_box(self, page_width, page_height, xml_node):
-    bounding_box_node = xml_node.find('bounding-box')
-    left = self._to_int(bounding_box_node.get('x1'))
-    top = page_height - self._to_int(bounding_box_node.get('y2'))
-    right = self._to_int(bounding_box_node.get('x2'))
-    bottom = page_height - self._to_int(bounding_box_node.get('y1'))
-    assert 0 <= left and left < right and right <= page_width
-    assert 0 <= top and top < bottom and bottom <= page_height
-    return Rect(left, top, right, bottom)
+  def _get_table_image(self, pdf_file_name, table_rect):
+    pdf_height, pdf_width = self._get_pdf_file_shape(pdf_file_name)
+    page = pdf2image.convert_from_path(pdf_file_name, size=(pdf_width, pdf_height))[0]
+    return page.crop(table_rect.as_tuple())
 
-  def _to_int(self, str):
-    result = str.replace('ß', '6')
-    return int(result)
-
-  def _get_cell(self, page_width, page_height, xml_node):
-    text_rect = self._get_bounding_box(page_width, page_height, xml_node)
-    col_start = int(xml_node.get('start-col'))
-    col_end = int(xml_node.get('end-col', col_start))
-    row_start = int(xml_node.get('start-row'))
-    row_end = int(xml_node.get('end-row', row_start))
-    assert col_start <= col_end and row_start <= row_end
-    grid_rect = Rect(col_start, row_start, col_end + 1, row_end + 1)
-    return Cell(text_rect, grid_rect)
+  def _get_markup_cells(self, page_height, html_tokens, cells):
+    # TODO
+    pass
 
   def _image_to_byte_array(self, image):
     imgByteArr = io.BytesIO()
@@ -151,13 +133,12 @@ class IcdarBase(tfds.core.GeneratorBasedBuilder):
     return imgByteArr
 
 
-class IcdarSplit(IcdarBase):
+class FinTabNetSplit(FinTabNetBase):
   """DatasetBuilder for training SPLIT model."""
 
-  VERSION = tfds.core.Version('1.0.1')
+  VERSION = tfds.core.Version('1.0.0')
   RELEASE_NOTES = {
-      '1.0.0': 'Initial release.',
-      '1.0.1': 'Generate markup table.'
+      '1.0.0': 'Initial release.'
   }
 
   def _get_features_dict(self):
@@ -182,13 +163,12 @@ class IcdarSplit(IcdarBase):
     }
 
 
-class IcdarMerge(IcdarBase):
+class FinTabNetMerge(FinTabNetBase):
   """DatasetBuilder for training MERGE model."""
 
-  VERSION = tfds.core.Version('1.0.1')
+  VERSION = tfds.core.Version('1.0.0')
   RELEASE_NOTES = {
-      '1.0.0': 'Initial release.',
-      '1.0.1': 'Generate markup table.'
+      '1.0.0': 'Initial release.'
   }
 
   def __init__(self, split_checkpoint_path='checkpoints/split.ckpt', **kwargs):

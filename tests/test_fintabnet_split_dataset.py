@@ -6,7 +6,7 @@ import context
 from datasets.FinTabNet.FinTabNet import FinTabNetSplit
 
 
-class IcdarSplitTest(tfds.testing.DatasetBuilderTestCase):
+class FinTabNetSplitTest(tfds.testing.DatasetBuilderTestCase):
   """Tests for FinTabNet dataset."""
   DATASET_CLASS = FinTabNetSplit
   SPLITS = {

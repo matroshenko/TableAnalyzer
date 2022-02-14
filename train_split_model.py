@@ -7,6 +7,7 @@ import tensorflow.keras as keras
 import tensorflow_datasets as tfds
 
 from datasets.ICDAR.ICDAR import IcdarSplit
+from datasets.FinTabNet.FinTabNet import FinTabNetSplit
 from split.model import Model
 
 def get_losses_dict():
@@ -95,7 +96,7 @@ def main(args):
         run_eagerly=True)
 
     ds_train, ds_test = tfds.load(
-        'icdar_split',
+        args.dataset_name,
         split=['train', 'test']
     )
     ds_train = build_data_pipeline(ds_train, Target.Train, args.max_samples_count)
@@ -108,6 +109,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Trains SPLIT model.")
+    parser.add_argument('dataset_name', help='Name of the dataset to train on.', 
+        choices=['icdar_split', 'fin_tab_net_split'])
     parser.add_argument('result_file_path', help='Path to the file, where trained model will be serialized.')
     parser.add_argument('--epochs_count', default=10, type=int, help='Number of epochs to train.')
     parser.add_argument('--initial_learning_rate', default=0.00075, type=float, help='Initial value of learning rate.')

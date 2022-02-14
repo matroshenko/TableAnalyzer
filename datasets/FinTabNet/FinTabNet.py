@@ -68,14 +68,14 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
   def _generate_examples(self, path, split):
     """Yields examples for specified split."""
 
-    jsonl_file_name = os.path.join(path, 'FinTabNet_1.0.0_table_example.jsonl')
-    with open(jsonl_file_name, 'r') as f:
+    jsonl_file_name = path / 'FinTabNet_1.0.0_table_example.jsonl'
+    with tf.io.gfile.GFile(jsonl_file_name, 'r') as f:
       for line in f:
         sample = json.loads(line)
         if sample['split'] != split:
           continue
 
-        pdf_file_name = os.path.join(path, 'pdf', sample['filename'])
+        pdf_file_name = path / 'pdf' / sample['filename']
         pdf_height, pdf_width = self._get_pdf_file_shape(pdf_file_name)
 
         table_rect = self._bbox_to_rect(pdf_height, sample['bbox'])
@@ -92,7 +92,7 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
     pass
 
   def _get_pdf_file_shape(self, pdf_file_name):
-    with open(pdf_file_name, 'rb') as pdf_file:
+    with tf.io.gfile.GFile(pdf_file_name, 'rb') as pdf_file:
       pdf_page = PdfFileReader(pdf_file).getPage(0)
       pdf_shape = pdf_page.mediaBox
       pdf_height = pdf_shape[3]-pdf_shape[1]

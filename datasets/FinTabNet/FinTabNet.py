@@ -26,8 +26,13 @@ It should also contain any processing which has been applied (if any),
 (e.g. corrupted example skipped, images cropped,...):
 """
 
-# TODO(ICDAR): BibTeX citation
 _CITATION = """
+@article{zheng2020global,
+  title={Global Table Extractor (GTE): A Framework for Joint Table Identification and Cell Structure Recognition Using Visual Context},
+  author={Zheng, Xinyi and Burdick, Doug and Popa, Lucian and Zhong, Peter and Wang, Nancy Xin Ru},
+  journal={Winter Conference for Applications in Computer Vision (WACV)},
+  year={2021}
+}
 """
 
 

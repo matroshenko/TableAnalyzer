@@ -4,6 +4,7 @@ from abc import abstractmethod
 import xml.etree.ElementTree as ET
 import io
 import json
+from markupsafe import Markup
 
 import tensorflow_datasets as tfds
 import tensorflow as tf
@@ -29,10 +30,6 @@ It should also contain any processing which has been applied (if any),
 # TODO(ICDAR): BibTeX citation
 _CITATION = """
 """
-
-_TABLE_IDS_TO_IGNORE = [
-  40600 # Invalid markup
-]
 
 
 class MarkupError(Exception):
@@ -80,8 +77,8 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
       for line in f:
         sample = json.loads(line)
         table_id = sample['table_id']
-        if table_id in _TABLE_IDS_TO_IGNORE:
-          continue
+        #if table_id < 40600:
+        #  continue
 
         pdf_file_name = jsonl_file_name.parent / 'pdf' / sample['filename']
         pdf_height, pdf_width = self._get_pdf_file_shape(pdf_file_name)
@@ -152,6 +149,9 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
       for grid_col_idx in range(cols_count):
         if visited_grid_cells[grid_row_idx][grid_col_idx]:
           continue
+        if cell_idx >= len(row_branch):
+          raise MarkupError
+
         cell_element = row_branch[cell_idx]
         col_span = int(cell_element.get('colspan', 1))
         row_span = int(cell_element.get('rowspan', 1))

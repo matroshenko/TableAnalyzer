@@ -4,7 +4,6 @@ from abc import abstractmethod
 import xml.etree.ElementTree as ET
 import io
 import json
-from markupsafe import Markup
 
 import tensorflow_datasets as tfds
 import tensorflow as tf

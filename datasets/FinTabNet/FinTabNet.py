@@ -30,6 +30,10 @@ It should also contain any processing which has been applied (if any),
 _CITATION = """
 """
 
+_TABLE_IDS_TO_IGNORE = [
+  40600 # Invalid markup
+]
+
 
 class MarkupError(Exception):
   pass
@@ -76,6 +80,8 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
       for line in f:
         sample = json.loads(line)
         table_id = sample['table_id']
+        if table_id in _TABLE_IDS_TO_IGNORE:
+          continue
 
         pdf_file_name = jsonl_file_name.parent / 'pdf' / sample['filename']
         pdf_height, pdf_width = self._get_pdf_file_shape(pdf_file_name)

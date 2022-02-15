@@ -3,7 +3,7 @@ import tensorflow.keras as keras
 
 from split.projection_layer import ProjectionLayer, ProjectionDirection
 from split.binarize_layer import BinarizeLayer
-from datasets.ICDAR.markup_table import Table
+from table.markup_table import Table
 from table.grid_structure import GridStructureBuilder
 from utils.rect import Rect
 from metrics.adjacency_f_measure import AdjacencyFMeasure

@@ -4,7 +4,7 @@ import numpy as np
 
 import context
 from utils.rect import Rect
-from datasets.ICDAR.markup_table import Cell, Table
+from table.markup_table import Cell, Table
 from table.grid_structure import GridStructure
 
 

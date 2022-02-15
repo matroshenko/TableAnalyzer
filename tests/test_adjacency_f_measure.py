@@ -4,7 +4,7 @@ import tensorflow as tf
 
 import context
 from metrics.adjacency_f_measure import AdjacencyFMeasure
-from datasets.ICDAR.markup_table import Cell, Table
+from table.markup_table import Cell, Table
 from table.grid_structure import GridStructure
 from utils.rect import Rect
 

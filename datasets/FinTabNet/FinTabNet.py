@@ -11,7 +11,7 @@ import pdf2image
 from PyPDF2 import PdfFileReader
 import numpy as np
 
-from datasets.ICDAR.markup_table import Cell, Table
+from table.markup_table import Cell, Table
 from utils.rect import Rect
 from table.grid_structure import GridStructureBuilder
 from split.model import Model

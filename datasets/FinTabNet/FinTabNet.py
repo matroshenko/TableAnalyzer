@@ -69,9 +69,9 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
       return {'val': self._generate_examples(path / 'FinTabNet_1.0.0_table_example.jsonl')}
 
     return {
-        'train': self._generate_examples(path / 'fintabnet' / 'FinTabNet_1.0.0_table_train.jsonl'),
-        'val': self._generate_examples(path / 'fintabnet' / 'FinTabNet_1.0.0_table_val.jsonl'),
-        'test': self._generate_examples(path / 'fintabnet' / 'FinTabNet_1.0.0_table_test.jsonl')
+        'train': self._generate_examples(path / 'fintabnet' / 'FinTabNet_1.0.0_cell_train.jsonl'),
+        'val': self._generate_examples(path / 'fintabnet' / 'FinTabNet_1.0.0_cell_val.jsonl'),
+        'test': self._generate_examples(path / 'fintabnet' / 'FinTabNet_1.0.0_cell_test.jsonl')
     }
 
   def _generate_examples(self, jsonl_file_name):

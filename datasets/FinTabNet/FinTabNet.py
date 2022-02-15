@@ -89,6 +89,9 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
           
         except MarkupError:
           continue
+        except Exception:
+          print('\nException raised while processing table={}\n'.format(table_id))
+          raise
 
         table_rect = self._get_bounding_rect(cells)
         table = Table(table_id, table_rect, cells)

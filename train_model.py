@@ -54,7 +54,7 @@ def main(args):
         run_eagerly=True)
 
     ds_suffix = '_split' if args.model_type == 'SPLIT' else '_merge'
-    ds_train = tfds.load(args.dataset_name + ds_suffix, split='train')
+    ds = tfds.load(args.dataset_name + ds_suffix, split='train')
     if args.max_samples_count is not None:
         assert args.max_samples_count > 0
         ds = ds.take(args.max_samples_count)
@@ -65,7 +65,7 @@ def main(args):
     ds = ds.prefetch(tf.data.AUTOTUNE)
 
     model.fit(
-        ds_train, epochs=args.epochs_count,
+        ds, epochs=args.epochs_count,
         callbacks=[get_tensorboard_callback(args.model_type)])
     model.save_weights(args.result_file_path, save_format='h5')
 

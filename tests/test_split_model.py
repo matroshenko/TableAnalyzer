@@ -6,6 +6,14 @@ import context
 from split.model import Model
 
 class ModelTestCase(TestCase):
+    def test_one_pixel_image(self):
+        batch_size = 1
+        height = 1
+        width = 1
+        random_image = tf.random.uniform(shape=(batch_size, height, width, 3), minval=0, maxval=256, dtype='int32', seed=42)
+        m = Model()
+        m(random_image)
+
     def test_output_shape(self):
         batch_size = 1
         height = 200

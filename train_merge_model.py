@@ -7,6 +7,7 @@ import tensorflow.keras as keras
 import tensorflow_datasets as tfds
 
 from datasets.ICDAR.ICDAR import IcdarMerge
+from datasets.FinTabNet.FinTabNet import FinTabNetMerge
 from merge.model import Model
 
 def get_losses_dict():
@@ -52,18 +53,13 @@ def convert_ds_element_to_tuple(element):
         }
     )
 
-class Target(Enum):
-    Train = 0,
-    Test = 1
-
-def build_data_pipeline(ds, target, max_samples_count):
+def build_data_pipeline(ds, max_samples_count):
     if max_samples_count is not None:
         assert max_samples_count > 0
         ds = ds.take(max_samples_count)
     
     ds = ds.map(convert_ds_element_to_tuple)
-    if target == Target.Train:
-        ds = ds.shuffle(128)
+    ds = ds.shuffle(128)
     ds = ds.batch(1)
     ds = ds.prefetch(tf.data.AUTOTUNE)
     return ds
@@ -93,20 +89,18 @@ def main(args):
         loss_weights=get_losses_weights(),
         metrics=get_metrics_dict(), run_eagerly=True)
 
-    ds_train, ds_test = tfds.load(
-        'icdar_merge',
-        split=['train', 'test']
-    )
-    ds_train = build_data_pipeline(ds_train, Target.Train, args.max_samples_count)
-    ds_test = build_data_pipeline(ds_test, Target.Test, args.max_samples_count)
+    ds_train = tfds.load(args.dataset_name, split='train')
+    ds_train = build_data_pipeline(ds_train, args.max_samples_count)
 
     model.fit(
-        ds_train, epochs=args.epochs_count, validation_data=ds_test,
-        callbacks=[get_tensorboard_callback()], validation_freq=10)
+        ds_train, epochs=args.epochs_count,
+        callbacks=[get_tensorboard_callback()])
     model.save_weights(args.result_file_path, save_format='h5')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Trains MERGE model.")
+    parser.add_argument('dataset_name', help='Name of the dataset to train on.', 
+        choices=['icdar_merge', 'fin_tab_net_merge'])
     parser.add_argument('result_file_path', help='Path to the file, where trained model will be serialized.')
     parser.add_argument('--epochs_count', default=10, type=int, help='Number of epochs to train.')
     parser.add_argument('--initial_learning_rate', default=0.00075, help='Initial value of learning rate.')

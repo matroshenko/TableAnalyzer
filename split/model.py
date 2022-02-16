@@ -36,7 +36,7 @@ class ProjectionNetworkBlock(keras.layers.Layer):
         self._concat1 = keras.layers.Concatenate()
         if should_reduce_size:
             pool_size = (1, 2) if direction == ProjectionDirection.Height else (2, 1)
-            self._pooling = keras.layers.MaxPool2D(pool_size)
+            self._pooling = keras.layers.MaxPool2D(pool_size, padding='same')
         self._upper_branch_conv = keras.layers.Conv2D(18, 1, activation='relu')
         self._upper_branch_proj = ProjectionLayer(direction, True)
         self._lower_branch_conv = keras.layers.Conv2D(1, 1, activation='sigmoid')

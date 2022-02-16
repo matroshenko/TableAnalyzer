@@ -102,7 +102,7 @@ def main(args):
 
     model.fit(
         ds_train, epochs=args.epochs_count, validation_data=ds_test,
-        callbacks=[get_tensorboard_callback()], validation_freq=10)
+        callbacks=[get_tensorboard_callback()], validation_freq=1)
     model.save_weights(args.result_file_path, save_format='h5')
 
 if __name__ == '__main__':

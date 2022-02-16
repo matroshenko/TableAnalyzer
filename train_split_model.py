@@ -90,7 +90,7 @@ def main(args):
         loss_weights=get_losses_weights(), 
         run_eagerly=True)
 
-    ds_train = tfds.load(args.dataset_name, split='train')
+    ds_train = tfds.load(args.dataset_name + '_split', split='train')
     ds_train = build_data_pipeline(ds_train, args.max_samples_count)
 
     model.fit(
@@ -101,7 +101,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Trains SPLIT model.")
     parser.add_argument('dataset_name', help='Name of the dataset to train on.', 
-        choices=['icdar_split', 'fin_tab_net_split'])
+        choices=['icdar', 'fin_tab_net'])
     parser.add_argument('result_file_path', help='Path to the file, where trained model will be serialized.')
     parser.add_argument('--epochs_count', default=10, type=int, help='Number of epochs to train.')
     parser.add_argument('--initial_learning_rate', default=0.00075, type=float, help='Initial value of learning rate.')

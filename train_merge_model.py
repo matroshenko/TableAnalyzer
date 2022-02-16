@@ -89,7 +89,7 @@ def main(args):
         loss_weights=get_losses_weights(),
         metrics=get_metrics_dict(), run_eagerly=True)
 
-    ds_train = tfds.load(args.dataset_name, split='train')
+    ds_train = tfds.load(args.dataset_name + '_merge', split='train')
     ds_train = build_data_pipeline(ds_train, args.max_samples_count)
 
     model.fit(
@@ -100,7 +100,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Trains MERGE model.")
     parser.add_argument('dataset_name', help='Name of the dataset to train on.', 
-        choices=['icdar_merge', 'fin_tab_net_merge'])
+        choices=['icdar', 'fin_tab_net'])
     parser.add_argument('result_file_path', help='Path to the file, where trained model will be serialized.')
     parser.add_argument('--epochs_count', default=10, type=int, help='Number of epochs to train.')
     parser.add_argument('--initial_learning_rate', default=0.00075, help='Initial value of learning rate.')

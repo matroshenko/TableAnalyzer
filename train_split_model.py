@@ -90,7 +90,7 @@ def main(args):
         loss_weights=get_losses_weights(), 
         run_eagerly=True)
 
-    ds_train = tfds.load(args.train_dataset_name, split='train')
+    ds_train = tfds.load(args.dataset_name, split='train')
     ds_train = build_data_pipeline(ds_train, args.max_samples_count)
 
     model.fit(

@@ -1,5 +1,4 @@
 from PIL import Image, ImageDraw
-from matplotlib.pyplot import text
 
 from utils.rect import Rect
 from table.grid_structure import GridStructureBuilder

@@ -17,7 +17,7 @@ class BinarizeLayer(keras.layers.Layer):
 
     def call(self, probs):
         return tf.py_function(
-            self._binarize_batch, inp=[probs, self.gc_lambda], Tout=tf.int32)
+            BinarizeLayer._binarize_batch, inp=[probs, self.gc_lambda], Tout=tf.int32)
 
     @staticmethod
     def _binarize_batch(probs, gc_lambda):
@@ -25,12 +25,12 @@ class BinarizeLayer(keras.layers.Layer):
         batch_size = probs.shape[0]
         result = []
         for i in range(batch_size):
-            result.append(self._binarize_vector(probs[i].numpy()))
+            result.append(BinarizeLayer._binarize_vector(probs[i].numpy(), gc_lambda))
         return result
 
     @staticmethod
     def _binarize_vector(probs, gc_lambda):
-        graph, source, sink = self._create_graph(probs)
+        graph, source, sink = BinarizeLayer._create_graph(probs, gc_lambda)
         reachable_nodes, _ = graph.st_mincut(source, sink, 'capacity')
         reachable_nodes.remove(source)
         result = np.zeros(probs.shape, dtype='int32')

@@ -16,7 +16,7 @@ import PIL
 from table.markup_table import Cell, Table
 from utils.rect import Rect
 from table.grid_structure import GridStructureBuilder
-from split.model import Model
+import split.evaluation
 
 
 # TODO(ICDAR): Markdown description  that will appear on the catalog page.
@@ -192,7 +192,7 @@ class IcdarMerge(IcdarBase):
       '1.0.1': 'Generate markup table.'
   }
 
-  def __init__(self, split_checkpoint_path='checkpoints/split.ckpt', **kwargs):
+  def __init__(self, split_checkpoint_path='checkpoints/split_icdar.ckpt', **kwargs):
     super().__init__(**kwargs)
     self._split_checkpoint_path = split_checkpoint_path
     # Lazy initialization
@@ -251,12 +251,7 @@ class IcdarMerge(IcdarBase):
       return self._split_model
 
     assert tf.io.gfile.exists(self._split_checkpoint_path)
-    # Split model can't run in graph mode.
-    assert tf.executing_eagerly()
-    model = Model()
-    random_image = tf.random.uniform(shape=(1, 100, 200, 3), minval=0, maxval=255, dtype='int32')
-    model(random_image)
-    model.load_weights(self._split_checkpoint_path)
+    model = split.evaluation.load_model(self._split_checkpoint_path)
     
     self._split_model = model
     return model

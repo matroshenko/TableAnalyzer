@@ -19,7 +19,7 @@ def run_model_on_random_input(model):
 
 def load_model(model_file_path):
     assert os.path.exists(model_file_path)
-    model = Model()
+    model = Model(False)
     run_model_on_random_input(model)
     model.load_weights(model_file_path)
     model.compile(run_eagerly=True)

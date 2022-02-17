@@ -40,7 +40,7 @@ def main(args):
 
     module = split if args.model_type == 'SPLIT' else merge
 
-    model = module.model.Model()
+    model = module.model.Model(True)
     lr_schedule = keras.optimizers.schedules.ExponentialDecay(
         args.initial_learning_rate,
         decay_steps=80000,
@@ -51,7 +51,7 @@ def main(args):
         keras.optimizers.Adam(lr_schedule), 
         loss=module.training.get_losses_dict(), 
         loss_weights=module.training.get_losses_weights(),
-        run_eagerly=True)
+        run_eagerly=False)
 
     ds_suffix = '_split' if args.model_type == 'SPLIT' else '_merge'
     ds = tfds.load(args.dataset_name + ds_suffix, split='train')

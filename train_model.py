@@ -55,9 +55,6 @@ def main(args):
 
     ds_suffix = '_split' if args.model_type == 'SPLIT' else '_merge'
     ds = tfds.load(args.dataset_name + ds_suffix, split='train')
-    if args.max_samples_count is not None:
-        assert args.max_samples_count > 0
-        ds = ds.take(args.max_samples_count)
     
     ds = ds.map(module.training.convert_ds_element_to_tuple)
     ds = ds.shuffle(128)
@@ -66,7 +63,8 @@ def main(args):
 
     model.fit(
         ds, epochs=args.epochs_count,
-        callbacks=[get_tensorboard_callback(args.model_type)])
+        callbacks=[get_tensorboard_callback(args.model_type)],
+        steps_per_epoch=args.steps_per_epoch)
     model.save_weights(args.result_file_path, save_format='h5')
 
 if __name__ == '__main__':
@@ -77,6 +75,6 @@ if __name__ == '__main__':
     parser.add_argument('result_file_path', help='Path to the file, where trained model will be serialized.')
     parser.add_argument('--epochs_count', default=10, type=int, help='Number of epochs to train.')
     parser.add_argument('--initial_learning_rate', default=0.00075, help='Initial value of learning rate.')
-    parser.add_argument('--max_samples_count', default=None, type=int, 
-        help='Max count of samples to train/test. May be used for debug purposes.')
+    parser.add_argument('--steps_per_epoch', default=None, type=int, 
+        help='Steps per epoch. May be used for debug purposes.')
     main(parser.parse_args())

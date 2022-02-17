@@ -11,8 +11,10 @@ from datasets.ICDAR.ICDAR import IcdarMerge
 from datasets.FinTabNet.FinTabNet import FinTabNetMerge
 import merge
 import merge.training
+import merge.model
 import split
 import split.training
+import split.model
 
 
 def build_data_pipeline(ds, max_samples_count):

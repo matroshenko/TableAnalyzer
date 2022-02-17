@@ -16,17 +16,16 @@ class BinarizeLayer(keras.layers.Layer):
         self.gc_lambda = gc_lambda
 
     def call(self, probs):
-        return tf.py_function(
+        result = tf.py_function(
             BinarizeLayer._binarize_batch, inp=[probs, self.gc_lambda], Tout=tf.int32)
+        return tf.expand_dims(result, axis=0)
 
     @staticmethod
     def _binarize_batch(probs, gc_lambda):
-        assert(len(probs.shape) == 2)
+        assert len(probs.shape) == 2
         batch_size = probs.shape[0]
-        result = []
-        for i in range(batch_size):
-            result.append(BinarizeLayer._binarize_vector(probs[i].numpy(), gc_lambda))
-        return result
+        assert batch_size == 1
+        return BinarizeLayer._binarize_vector(probs[0].numpy(), gc_lambda)
 
     @staticmethod
     def _binarize_vector(probs, gc_lambda):

@@ -43,7 +43,3 @@ We have trained our models on ICDAR dataset for 100 epochs and on FinTabNet data
 
 ![](images/split_model_predictions.png)
 Fig 1. SPLIT model predictions on FinTabNet test set.
-
-# Conclusion
-
-More training data will be helpful to decrease variance.

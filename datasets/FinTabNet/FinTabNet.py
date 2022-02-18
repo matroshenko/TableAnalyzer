@@ -14,7 +14,7 @@ import numpy as np
 from table.markup_table import Cell, Table
 from utils.rect import Rect
 from table.grid_structure import GridStructureBuilder
-from split.model import Model
+from split.evaluation import load_model
 from utils.visualization import create_split_result_image
 
 
@@ -291,12 +291,7 @@ class FinTabNetMerge(FinTabNetBase):
       return self._split_model
 
     assert tf.io.gfile.exists(self._split_checkpoint_path)
-    # Split model can't run in graph mode.
-    assert tf.executing_eagerly()
-    model = Model()
-    random_image = tf.random.uniform(shape=(1, 100, 200, 3), minval=0, maxval=255, dtype='int32')
-    model(random_image)
-    model.load_weights(self._split_checkpoint_path)
+    model = load_model(self._split_checkpoint_path)
     
     self._split_model = model
     return model

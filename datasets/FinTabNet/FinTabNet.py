@@ -92,6 +92,7 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
             sample['html']['cells'])
           self._check_no_empty_column(cols_count, cells)
           self._check_text_rects_do_not_intersect(cells)
+          self._check_columns_rects_do_not_intersect(cols_count, cells)
           
           table_rect = self._get_bounding_rect(cells)
           table = Table(table_id, table_rect, cells)
@@ -184,12 +185,31 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
         raise MarkupError
 
   def _check_text_rects_do_not_intersect(self, cells):
-    for i in range(len(cells)):
-      text_rect_i = cells[i].text_rect
-      for j in range(i+1, len(cells)):
-        text_rect_j = cells[j].text_rect
-        if text_rect_i.intersects(text_rect_j):
-          raise MarkupError
+    if self._has_intersection([cell.text_rect for cell in cells]):
+      raise MarkupError
+  
+  def _has_intersection(self, rects):
+    for i in range(len(rects)):
+      for j in range(i+1, len(rects)):
+        if rects[i].intersects(rects[j]):
+          return True
+    return False
+
+  def _check_columns_rects_do_not_intersect(self, cols_count, cells):
+    columns_rects = []
+    for col_idx in range(cols_count):
+      column_rect = None
+      for cell in cells:
+        if cell.grid_rect.left == col_idx and cell.grid_rect.right == col_idx + 1:
+          text_rect = cell.text_rect
+          if column_rect is None:
+            column_rect = text_rect
+          else:
+            column_rect |= text_rect
+      assert column_rect is not None
+      columns_rects.append(column_rect)
+    if self._has_intersection(columns_rects):
+      raise MarkupError
 
   def _get_bounding_rect(self, cells):
     result = cells[0].text_rect

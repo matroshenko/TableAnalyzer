@@ -17,12 +17,15 @@ def run_model_on_random_input(model):
     }
     model(inputs)
 
-def load_model(model_file_path):
+def load_model(model_file_path, compute_metric):
     assert os.path.exists(model_file_path)
-    model = Model(False)
+    model = Model(compute_metric)
     run_model_on_random_input(model)
     model.load_weights(model_file_path)
-    model.compile(run_eagerly=True)
+
+    # Metric can't be calculated in graph mode.
+    run_eagerly = True if compute_metric else False
+    model.compile(run_eagerly=run_eagerly)
     return model
 
 def convert_ds_element_to_tuple(element):

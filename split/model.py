@@ -109,8 +109,9 @@ class ProjectionNetwork(keras.layers.Layer):
 
 
 class Model(keras.models.Model):
-    def __init__(self, training):
+    def __init__(self, compute_metric=False):
         super().__init__()
+
         self._normalize_image_layer = keras.layers.experimental.preprocessing.Rescaling(
             scale=1./255)
         self._sfcn = SharedFullyConvolutionalNetwork()
@@ -120,11 +121,7 @@ class Model(keras.models.Model):
         self._binarize_horz_splits_layer = BinarizeLayer(0)
         self._binarize_vert_splits_layer = BinarizeLayer(0)
 
-        if training:
-            # Adjacency f-measure can't be evaluated efficiently in graph mode.
-            self._metric = None
-        else:
-            self._metric = AdjacencyFMeasure()
+        self._metric = AdjacencyFMeasure() if compute_metric else None
 
     def call(self, input):
         input = self._normalize_image_layer(input)

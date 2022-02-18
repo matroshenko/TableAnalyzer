@@ -251,7 +251,7 @@ class IcdarMerge(IcdarBase):
       return self._split_model
 
     assert tf.io.gfile.exists(self._split_checkpoint_path)
-    model = split.evaluation.load_model(self._split_checkpoint_path)
+    model = split.evaluation.load_model(self._split_checkpoint_path, False)
     
     self._split_model = model
     return model

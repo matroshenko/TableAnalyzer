@@ -118,7 +118,7 @@ class CombineOutputsLayer(keras.layers.Layer):
 
 
 class Model(keras.models.Model):
-    def __init__(self, training):
+    def __init__(self, compute_metric=False):
         super().__init__()
         self._normalize_image_layer = keras.layers.experimental.preprocessing.Rescaling(
             scale=1./255)
@@ -131,10 +131,7 @@ class Model(keras.models.Model):
         self._combine_outputs1 = CombineOutputsLayer()
         self._combine_outputs2 = CombineOutputsLayer()
 
-        if training:
-            self._metric = None
-        else:
-            self._metric = AdjacencyFMeasure()
+        self._metric = AdjacencyFMeasure() if compute_metric else None
 
     def call(self, input_dict):
         image = input_dict['image']

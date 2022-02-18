@@ -12,7 +12,7 @@ from datasets.FinTabNet.FinTabNet import FinTabNetSplit
 
 def main(args):
     module = split.evaluation if args.model_type == 'SPLIT' else merge.evaluation
-    model = module.load_model(args.model_file_path)
+    model = module.load_model(args.model_file_path, True)
 
     ds_suffix = '_split' if args.model_type == 'SPLIT' else '_merge'
     ds = tfds.load(args.dataset_name + ds_suffix, split=args.split)

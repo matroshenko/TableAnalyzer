@@ -15,7 +15,7 @@ from table.markup_table import Cell, Table
 from utils.rect import Rect
 from table.grid_structure import GridStructureBuilder
 from split.evaluation import load_model
-from utils.visualization import create_split_result_image
+from utils.visualization import create_markup_text_image, create_split_result_image
 
 
 # TODO(ICDAR): Markdown description  that will appear on the catalog page.
@@ -91,6 +91,7 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
             sample['html']['structure']['tokens'], 
             sample['html']['cells'])
           self._check_no_empty_column(cols_count, cells)
+          self._check_text_rects_do_not_intersect(cells)
           
           table_rect = self._get_bounding_rect(cells)
           table = Table(table_id, table_rect, cells)
@@ -99,7 +100,8 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
           # Uncomment to debug.
           #create_split_result_image(
           #  table_image, table.create_horz_split_points_mask(), 
-          #  table.create_vert_split_points_mask()).save('{}.png'.format(table_id))
+          #  table.create_vert_split_points_mask()).save('{}_split_points.png'.format(table_id))
+          #create_markup_text_image(table_image, table).save('{}_markup_text.png'.format(table_id))
           yield table_id, self._get_single_example_dict(table_image, table)
 
         except MarkupError:
@@ -180,6 +182,14 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
           column_cells.append(cell)
       if not column_cells:
         raise MarkupError
+
+  def _check_text_rects_do_not_intersect(self, cells):
+    for i in range(len(cells)):
+      text_rect_i = cells[i].text_rect
+      for j in range(i+1, len(cells)):
+        text_rect_j = cells[j].text_rect
+        if text_rect_i.intersects(text_rect_j):
+          raise MarkupError
 
   def _get_bounding_rect(self, cells):
     result = cells[0].text_rect

@@ -39,16 +39,10 @@ We have trained our models on ICDAR dataset for 100 epochs and on FinTabNet data
 |SPLIT|FinTabNet|FinTabNet|0.8597|
 |SPLERGE|FinTabNet|FinTabNet|TBD|
 
-|                   | Train          | Test   |
-| ----------------- | ---------------|--------|
-| SPLIT             | 0.8863         | 0.5267 |
-| SPLIT + MERGE     | 0.8982         | 0.5295 |
-| Num of tables     | 81             | 148    |
-
 # Images
 
-![](images/merge_model_predictions.png)
-Fig 1. SPLERGE model predictions on training set.
+![](images/split_model_predictions.png)
+Fig 1. SPLIT model predictions on FinTabNet test set.
 
 # Conclusion
 

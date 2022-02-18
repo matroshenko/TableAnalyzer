@@ -232,7 +232,7 @@ class FinTabNetMerge(FinTabNetBase):
       '1.0.0': 'Initial release.'
   }
 
-  def __init__(self, split_checkpoint_path='checkpoints/split.ckpt', **kwargs):
+  def __init__(self, split_checkpoint_path='checkpoints/split_fin_tab_net.ckpt', **kwargs):
     super().__init__(**kwargs)
     self._split_checkpoint_path = split_checkpoint_path
     # Lazy initialization

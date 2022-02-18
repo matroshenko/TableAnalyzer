@@ -46,10 +46,12 @@ def create_markup_text_image(table_image, markup_table):
     top = markup_table.rect.top
     for cell in markup_table.cells:
         text_rect = cell.text_rect
-        text_rect.left -= left
-        text_rect.right -= left
-        text_rect.top -= top
-        text_rect.bottom -= top
-        draw.rectangle(text_rect.as_tuple(), fill=(255, 0, 0))
+        shifted_text_rect = Rect(
+            text_rect.left - left,
+            text_rect.top - top,
+            text_rect.right - left,
+            text_rect.bottom - top
+        )
+        draw.rectangle(shifted_text_rect.as_tuple(), fill=(255, 0, 0))
 
     return Image.blend(table_image, markup_text_image, 0.5)

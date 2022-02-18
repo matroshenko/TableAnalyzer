@@ -92,21 +92,21 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
             sample['html']['cells'])
           self._check_no_empty_column(cols_count, cells)
           
+          table_rect = self._get_bounding_rect(cells)
+          table = Table(table_id, table_rect, cells)
+          table_image = self._get_table_image(pdf_file_name, table_rect)
+
+          # Uncomment to debug.
+          #create_split_result_image(
+          #  table_image, table.create_horz_split_points_mask(), 
+          #  table.create_vert_split_points_mask()).save('{}.png'.format(table_id))
+          yield table_id, self._get_single_example_dict(table_image, table)
+
         except MarkupError:
           continue
         except Exception:
           print('\nException raised while processing table={}\n'.format(table_id))
           raise
-
-        table_rect = self._get_bounding_rect(cells)
-        table = Table(table_id, table_rect, cells)
-        table_image = self._get_table_image(pdf_file_name, table_rect)
-
-        # Uncomment to debug.
-        #create_split_result_image(
-        #  table_image, table.create_horz_split_points_mask(), 
-        #  table.create_vert_split_points_mask()).save('{}.png'.format(table_id))
-        yield table_id, self._get_single_example_dict(table_image, table)
 
   @abstractmethod
   def _get_single_example_dict(self, table_image, markup_table):

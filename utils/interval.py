@@ -10,6 +10,12 @@ class Interval(object):
     def get_center(self):
         return (self.start + self.end) // 2
 
+    def intersects(self, other):
+        return self.start < other.end and other.start < self.end
+
+    def __or__(self, other):
+        return Interval(min(self.start, other.start), max(self.end, other.end))
+
     @staticmethod
     def get_intersection_length(first, second):
         return max(0, min(first.end, second.end) - max(first.start, second.start))

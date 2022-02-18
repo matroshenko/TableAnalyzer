@@ -92,14 +92,14 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
             sample['html']['structure']['tokens'], 
             sample['html']['cells'])
           self._check_no_empty_column(cols_count, cells)
-          self._check_text_rects_do_not_intersect(cells)
-          self._check_columns_horz_intervals_do_not_intersect(cols_count, cells)
+          self._check_text_from_adjacent_columns_do_not_intersect(cols_count, cells)
           
           table_rect = self._get_bounding_rect(cells)
           table = Table(table_id, table_rect, cells)
           table_image = self._get_table_image(pdf_file_name, table_rect)
 
           # Uncomment to debug.
+          #if table_id == 13080:
           #  create_split_result_image(
           #    table_image, table.create_horz_split_points_mask(), 
           #    table.create_vert_split_points_mask()).save('{}_split_points.png'.format(table_id))
@@ -185,32 +185,20 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
       if not column_cells:
         raise MarkupError
 
-  def _check_text_rects_do_not_intersect(self, cells):
-    if self._has_intersection([cell.text_rect for cell in cells]):
-      raise MarkupError
-  
-  def _has_intersection(self, objects):
-    for i in range(len(objects)):
-      for j in range(i+1, len(objects)):
-        if objects[i].intersects(objects[j]):
-          return True
-    return False
-
-  def _check_columns_horz_intervals_do_not_intersect(self, cols_count, cells):
-    columns_intervals = []
-    for col_idx in range(cols_count):
-      column_interval = None
+  def _check_text_from_adjacent_columns_do_not_intersect(self, cols_count, cells):
+    for internal_vert_split_point_index in range(1, cols_count):
+      left_cells = []
+      right_cells = []
       for cell in cells:
-        if cell.grid_rect.left == col_idx and cell.grid_rect.right == col_idx + 1:
-          text_rect_horz_interval = Interval(cell.text_rect.left, cell.text_rect.right)
-          if column_interval is None:
-            column_interval = text_rect_horz_interval
-          else:
-            column_interval |= text_rect_horz_interval
-      assert column_interval is not None
-      columns_intervals.append(column_interval)
-    if self._has_intersection(columns_intervals):
-      raise MarkupError
+        if cell.grid_rect.right == internal_vert_split_point_index:
+          left_cells.append(cell)
+        if cell.grid_rect.left == internal_vert_split_point_index:
+          right_cells.append(cell)
+      assert left_cells and right_cells
+      left_text_right = max(cell.text_rect.right for cell in left_cells)
+      right_text_left = min(cell.text_rect.left for cell in right_cells)
+      if left_text_right > right_text_left:
+        raise MarkupError
 
   def _get_bounding_rect(self, cells):
     result = cells[0].text_rect

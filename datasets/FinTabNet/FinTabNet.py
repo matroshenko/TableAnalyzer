@@ -92,14 +92,16 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
             sample['html']['structure']['tokens'], 
             sample['html']['cells'])
           self._check_no_empty_column(cols_count, cells)
+          self._check_no_empty_row(rows_count, cells)
           self._check_text_from_adjacent_columns_do_not_intersect(cols_count, cells)
+          self._check_text_from_adjacent_rows_do_not_intersect(rows_count, cells)
           
           table_rect = self._get_bounding_rect(cells)
           table = Table(table_id, table_rect, cells)
           table_image = self._get_table_image(pdf_file_name, table_rect)
 
           # Uncomment to debug.
-          #if table_id == 13080:
+          #if table_id == 4261:
           #  create_split_result_image(
           #    table_image, table.create_horz_split_points_mask(), 
           #    table.create_vert_split_points_mask()).save('{}_split_points.png'.format(table_id))
@@ -185,6 +187,15 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
       if not column_cells:
         raise MarkupError
 
+  def _check_no_empty_row(self, rows_count, cells):
+    for row_idx in range(rows_count):
+      row_cells = []
+      for cell in cells:
+        if cell.grid_rect.top == row_idx and cell.grid_rect.bottom == row_idx + 1:
+          row_cells.append(cell)
+      if not row_cells:
+        raise MarkupError
+
   def _check_text_from_adjacent_columns_do_not_intersect(self, cols_count, cells):
     for internal_vert_split_point_index in range(1, cols_count):
       left_cells = []
@@ -198,6 +209,21 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
       left_text_right = max(cell.text_rect.right for cell in left_cells)
       right_text_left = min(cell.text_rect.left for cell in right_cells)
       if left_text_right > right_text_left:
+        raise MarkupError
+
+  def _check_text_from_adjacent_rows_do_not_intersect(self, rows_count, cells):
+    for internal_hort_split_point_index in range(1, rows_count):
+      top_cells = []
+      bottom_cells = []
+      for cell in cells:
+        if cell.grid_rect.bottom == internal_hort_split_point_index:
+          top_cells.append(cell)
+        if cell.grid_rect.top == internal_hort_split_point_index:
+          bottom_cells.append(cell)
+      assert top_cells and bottom_cells
+      top_text_bottom = max(cell.text_rect.bottom for cell in top_cells)
+      bottom_text_top = min(cell.text_rect.top for cell in bottom_cells)
+      if top_text_bottom > bottom_text_top:
         raise MarkupError
 
   def _get_bounding_rect(self, cells):

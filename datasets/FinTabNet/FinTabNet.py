@@ -13,6 +13,7 @@ import numpy as np
 
 from table.markup_table import Cell, Table
 from utils.rect import Rect
+from utils.interval import Interval
 from table.grid_structure import GridStructureBuilder
 from split.evaluation import load_model
 from utils.visualization import create_markup_text_image, create_split_result_image
@@ -92,17 +93,17 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
             sample['html']['cells'])
           self._check_no_empty_column(cols_count, cells)
           self._check_text_rects_do_not_intersect(cells)
-          self._check_columns_rects_do_not_intersect(cols_count, cells)
+          self._check_columns_horz_intervals_do_not_intersect(cols_count, cells)
           
           table_rect = self._get_bounding_rect(cells)
           table = Table(table_id, table_rect, cells)
           table_image = self._get_table_image(pdf_file_name, table_rect)
 
           # Uncomment to debug.
-          #create_split_result_image(
-          #  table_image, table.create_horz_split_points_mask(), 
-          #  table.create_vert_split_points_mask()).save('{}_split_points.png'.format(table_id))
-          #create_markup_text_image(table_image, table).save('{}_markup_text.png'.format(table_id))
+          #  create_split_result_image(
+          #    table_image, table.create_horz_split_points_mask(), 
+          #    table.create_vert_split_points_mask()).save('{}_split_points.png'.format(table_id))
+          #  create_markup_text_image(table_image, table).save('{}_markup_text.png'.format(table_id))
           yield table_id, self._get_single_example_dict(table_image, table)
 
         except MarkupError:
@@ -188,27 +189,27 @@ class FinTabNetBase(tfds.core.GeneratorBasedBuilder):
     if self._has_intersection([cell.text_rect for cell in cells]):
       raise MarkupError
   
-  def _has_intersection(self, rects):
-    for i in range(len(rects)):
-      for j in range(i+1, len(rects)):
-        if rects[i].intersects(rects[j]):
+  def _has_intersection(self, objects):
+    for i in range(len(objects)):
+      for j in range(i+1, len(objects)):
+        if objects[i].intersects(objects[j]):
           return True
     return False
 
-  def _check_columns_rects_do_not_intersect(self, cols_count, cells):
-    columns_rects = []
+  def _check_columns_horz_intervals_do_not_intersect(self, cols_count, cells):
+    columns_intervals = []
     for col_idx in range(cols_count):
-      column_rect = None
+      column_interval = None
       for cell in cells:
         if cell.grid_rect.left == col_idx and cell.grid_rect.right == col_idx + 1:
-          text_rect = cell.text_rect
-          if column_rect is None:
-            column_rect = text_rect
+          text_rect_horz_interval = Interval(cell.text_rect.left, cell.text_rect.right)
+          if column_interval is None:
+            column_interval = text_rect_horz_interval
           else:
-            column_rect |= text_rect
-      assert column_rect is not None
-      columns_rects.append(column_rect)
-    if self._has_intersection(columns_rects):
+            column_interval |= text_rect_horz_interval
+      assert column_interval is not None
+      columns_intervals.append(column_interval)
+    if self._has_intersection(columns_intervals):
       raise MarkupError
 
   def _get_bounding_rect(self, cells):

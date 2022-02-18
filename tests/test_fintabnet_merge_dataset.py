@@ -13,7 +13,7 @@ class FinTabNetSplitTest(tfds.testing.DatasetBuilderTestCase):
   """Tests for FinTabNet dataset."""
   DATASET_CLASS = FinTabNetMerge
   SPLITS = {
-      'train': 17  # Number of fake train example
+      'val': 16  # Number of fake train example
   }
   # Split model can't run in graph mode.
   SKIP_TF1_GRAPH_MODE = True

@@ -17,17 +17,6 @@ import split.training
 import split.model
 
 
-def build_data_pipeline(ds, max_samples_count):
-    if max_samples_count is not None:
-        assert max_samples_count > 0
-        ds = ds.take(max_samples_count)
-    
-    ds = ds.map(merge.training.convert_ds_element_to_tuple)
-    ds = ds.shuffle(128)
-    ds = ds.batch(1)
-    ds = ds.prefetch(tf.data.AUTOTUNE)
-    return ds
-
 def get_tensorboard_callback(model_type):
     now = datetime.utcnow().strftime('%Y%m%d%H%M%S')
     root_logdir = os.path.join('/tmp/tf_logs', model_type)

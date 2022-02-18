@@ -20,5 +20,5 @@ class ProjectionLayer(keras.layers.Layer):
         axis = 2 if self._direction == ProjectionDirection.Height else 1
         result = tf.reduce_mean(input, axis=axis, keepdims=True)
         if self._broadcast_to_original_shape:
-            result = tf.broadcast_to(result, input.shape)
+            result = tf.broadcast_to(result, tf.shape(input))
         return result

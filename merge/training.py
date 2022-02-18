@@ -19,9 +19,6 @@ def get_losses_weights():
         'markup_table': 0
     }
 
-def get_metrics_dict():
-    return {}
-
 def convert_ds_element_to_tuple(element):
     merge_down_mask = element['merge_down_mask']
     merge_right_mask = element['merge_right_mask']

@@ -109,7 +109,7 @@ class ProjectionNetwork(keras.layers.Layer):
 
 
 class Model(keras.models.Model):
-    def __init__(self):
+    def __init__(self, training):
         super().__init__()
         self._normalize_image_layer = keras.layers.experimental.preprocessing.Rescaling(
             scale=1./255)
@@ -120,7 +120,11 @@ class Model(keras.models.Model):
         self._binarize_horz_splits_layer = BinarizeLayer(0)
         self._binarize_vert_splits_layer = BinarizeLayer(0)
 
-        self._metric = AdjacencyFMeasure()
+        if training:
+            # Adjacency f-measure can't be evaluated efficiently in graph mode.
+            self._metric = None
+        else:
+            self._metric = AdjacencyFMeasure()
 
     def call(self, input):
         input = self._normalize_image_layer(input)
@@ -144,6 +148,9 @@ class Model(keras.models.Model):
     def compute_metrics(self, input_dict, targets_dict, prediction, sample_weight):
         metric_results = super().compute_metrics(
             input_dict, targets_dict, prediction, sample_weight)
+
+        if self._metric is None:
+            return metric_results
 
         markup_table = Table.from_tensor(tf.squeeze(targets_dict['markup_table'], axis=0))
 

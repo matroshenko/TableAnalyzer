@@ -16,15 +16,20 @@ class BinarizeLayer(keras.layers.Layer):
         self.gc_lambda = gc_lambda
 
     def call(self, probs):
-        assert(len(probs.shape) == 2)
-        batch_size = probs.shape[0]
-        result = []
-        for i in range(batch_size):
-            result.append(self._binarize_vector(probs[i].numpy()))
-        return tf.constant(result, dtype=tf.int32)
+        result = tf.py_function(
+            BinarizeLayer._binarize_batch, inp=[probs, self.gc_lambda], Tout=tf.int32)
+        return tf.expand_dims(result, axis=0)
 
-    def _binarize_vector(self, probs):
-        graph, source, sink = self._create_graph(probs)
+    @staticmethod
+    def _binarize_batch(probs, gc_lambda):
+        assert len(probs.shape) == 2
+        batch_size = probs.shape[0]
+        assert batch_size == 1
+        return BinarizeLayer._binarize_vector(probs[0].numpy(), gc_lambda)
+
+    @staticmethod
+    def _binarize_vector(probs, gc_lambda):
+        graph, source, sink = BinarizeLayer._create_graph(probs, gc_lambda)
         reachable_nodes, _ = graph.st_mincut(source, sink, 'capacity')
         reachable_nodes.remove(source)
         result = np.zeros(probs.shape, dtype='int32')
@@ -32,7 +37,8 @@ class BinarizeLayer(keras.layers.Layer):
             result[node-1] = 1
         return result
 
-    def _create_graph(self, probs):
+    @staticmethod
+    def _create_graph(probs, gc_lambda):
         n = len(probs)
         assert n > 0
         result = igraph.Graph()
@@ -51,6 +57,6 @@ class BinarizeLayer(keras.layers.Layer):
         if n > 1:
             result.add_edges(
                 [(i+1, i+2) for i in range(n-1)],
-                {'capacity': [get_capacity(self.gc_lambda)] * (n-1)}
+                {'capacity': [get_capacity(gc_lambda)] * (n-1)}
             )
         return result, source, sink

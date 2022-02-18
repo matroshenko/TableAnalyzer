@@ -52,6 +52,6 @@ def create_markup_text_image(table_image, markup_table):
             text_rect.right - left,
             text_rect.bottom - top
         )
-        draw.rectangle(shifted_text_rect.as_tuple(), fill=(255, 0, 0))
+        draw.rectangle(shifted_text_rect.as_tuple(), fill=(255, 0, 0), outline=(0, 255, 0))
 
     return Image.blend(table_image, markup_text_image, 0.5)

@@ -31,7 +31,7 @@ def main(args):
 
     module = split if args.model_type == 'SPLIT' else merge
 
-    model = module.model.Model(True)
+    model = module.model.Model(False)
     lr_schedule = keras.optimizers.schedules.ExponentialDecay(
         args.initial_learning_rate,
         decay_steps=80000,

@@ -35,7 +35,7 @@ def main(args):
     lr_schedule = keras.optimizers.schedules.ExponentialDecay(
         args.initial_learning_rate,
         decay_steps=80000,
-        decay_rate=0.075,
+        decay_rate=0.75,
         staircase=True)
 
     # Currently MERGE model can't run in graph mode.

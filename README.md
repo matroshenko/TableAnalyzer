@@ -34,9 +34,9 @@ We have trained our models on ICDAR dataset for 100 epochs and on FinTabNet data
 |-|-|-|-|
 |SPLIT|ICDAR|ICDAR|0.5267|
 |SPLERGE|ICDAR|ICDAR|0.5295|
-|SPLIT|FinTabNet|ICDAR|0.5255|
+|SPLIT|FinTabNet|ICDAR|0.5412|
 |SPLERGE|FinTableNet|ICDAR|TBD|
-|SPLIT|FinTabNet|FinTabNet|0.8674|
+|SPLIT|FinTabNet|FinTabNet|0.8822|
 |SPLERGE|FinTabNet|FinTabNet|TBD|
 
 # Images

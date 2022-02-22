@@ -117,9 +117,9 @@ class Model(keras.models.Model):
         self._sfcn = SharedFullyConvolutionalNetwork()
         self._rpn = ProjectionNetwork(ProjectionDirection.Height, 'RPN')
         self._cpn = ProjectionNetwork(ProjectionDirection.Width, 'CPN')
-        # Experiment shows, that on ICDAR dataset smoothing postprocessing worsens results.
+
         self._binarize_horz_splits_layer = BinarizeLayer(0)
-        self._binarize_vert_splits_layer = BinarizeLayer(0)
+        self._binarize_vert_splits_layer = BinarizeLayer(0.75)
 
         self._metric = AdjacencyFMeasure() if compute_metric else None
 

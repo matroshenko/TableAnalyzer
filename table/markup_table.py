@@ -80,6 +80,10 @@ class Table(object):
     merge_down_mask = np.zeros(shape=(n-1, m), dtype=bool)
 
     for cell in self.cells:
+      if cell.grid_rect.get_area() == 1:
+        # Not a spanning cell.
+        continue
+
       outer_rect = self._calculate_outer_rect(cell)
       for i in range(n):
         for j in range(m):

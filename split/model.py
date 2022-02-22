@@ -129,7 +129,7 @@ class Model(keras.models.Model):
         horz_split_points_probs1, horz_split_points_probs2, horz_split_points_probs3 = self._rpn(sfcn_output)
         vert_split_points_probs1, vert_split_points_probs2, vert_split_points_probs3 = self._cpn(sfcn_output)
         horz_split_points_binary = self._binarize_horz_splits_layer(horz_split_points_probs3)
-        vert_split_points_binary = self._binarize_horz_splits_layer(vert_split_points_probs3)
+        vert_split_points_binary = self._binarize_vert_splits_layer(vert_split_points_probs3)
         return {
             'horz_split_points_probs1': horz_split_points_probs1,
             'horz_split_points_probs2': horz_split_points_probs2,

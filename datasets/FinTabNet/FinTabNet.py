@@ -272,9 +272,10 @@ class FinTabNetSplit(FinTabNetBase):
 class FinTabNetMerge(FinTabNetBase):
   """DatasetBuilder for training MERGE model."""
 
-  VERSION = tfds.core.Version('1.0.0')
+  VERSION = tfds.core.Version('1.0.1')
   RELEASE_NOTES = {
-      '1.0.0': 'Initial release.'
+      '1.0.0': 'Initial release.',
+      '1.0.1': 'Updated split model checkpoint and creation of merge masks.'
   }
 
   def __init__(self, split_checkpoint_path='checkpoints/split_fin_tab_net.ckpt', **kwargs):

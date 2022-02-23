@@ -49,6 +49,11 @@ def main(args):
     ds_suffix = '_split' if args.model_type == 'SPLIT' else '_merge'
     ds = tfds.load(args.dataset_name + ds_suffix, split='train')
     
+    if args.model_type == 'MERGE':
+        # MERGE model output is empty for table with 1 row or 1 column,
+        # which leads to nan loss.
+        ds = ds.filter(merge.training.has_more_than_one_row_and_column)
+
     ds = ds.map(module.training.convert_ds_element_to_tuple)
     ds = ds.shuffle(128)
     ds = ds.batch(1)

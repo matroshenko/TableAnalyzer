@@ -177,7 +177,7 @@ class Model(keras.models.Model):
         grid = GridStructureBuilder(markup_table.rect, h_binary, v_binary).build()
 
         merge_down_mask = (tf.squeeze(prediction['merge_down_probs2'], axis=0) >= 0.5).numpy()
-        merge_right_mask = (tf.squeeze(prediction['merge_right_probs2'], axis=0) >= 0.3).numpy()
+        merge_right_mask = (tf.squeeze(prediction['merge_right_probs2'], axis=0) >= 0.5).numpy()
         cells = CellsStructureBuilder(merge_right_mask, merge_down_mask).build()
         self._metric.update_state_eager(markup_table, grid, cells)
         

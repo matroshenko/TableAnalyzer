@@ -139,7 +139,7 @@ class Model(keras.models.Model):
             'vert_split_points_probs2': vert_split_points_probs2,
             'vert_split_points_probs3': vert_split_points_probs3,
             'vert_split_points_binary': vert_split_points_binary,
-            'markup_table': None
+            'markup_table': tf.zeros(shape=(0,))
         }
 
     def compute_metrics(self, input_dict, targets_dict, prediction, sample_weight):

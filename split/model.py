@@ -139,6 +139,7 @@ class Model(keras.models.Model):
             'vert_split_points_probs2': vert_split_points_probs2,
             'vert_split_points_probs3': vert_split_points_probs3,
             'vert_split_points_binary': vert_split_points_binary,
+            # Stub for keras training to work.
             'markup_table': tf.zeros(shape=(0,))
         }
 

@@ -1,11 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
-import numpy as np
-import igraph
 
-
-def get_capacity(value):
-    return int(1024 * value)
+gc_binarize_module = tf.load_op_library('./split/gc_binarize.so')
 
 
 class BinarizeLayer(keras.layers.Layer):
@@ -16,47 +12,5 @@ class BinarizeLayer(keras.layers.Layer):
         self.gc_lambda = gc_lambda
 
     def call(self, probs):
-        result = tf.py_function(
-            BinarizeLayer._binarize_batch, inp=[probs, self.gc_lambda], Tout=tf.int32)
+        result = gc_binarize_module.gc_binarize(probs[0], self.gc_lambda)
         return tf.expand_dims(result, axis=0)
-
-    @staticmethod
-    def _binarize_batch(probs, gc_lambda):
-        assert len(probs.shape) == 2
-        batch_size = probs.shape[0]
-        assert batch_size == 1
-        return BinarizeLayer._binarize_vector(probs[0].numpy(), gc_lambda)
-
-    @staticmethod
-    def _binarize_vector(probs, gc_lambda):
-        graph, source, sink = BinarizeLayer._create_graph(probs, gc_lambda)
-        reachable_nodes, _ = graph.st_mincut(source, sink, 'capacity')
-        reachable_nodes.remove(source)
-        result = np.zeros(probs.shape, dtype='int32')
-        for node in reachable_nodes:
-            result[node-1] = 1
-        return result
-
-    @staticmethod
-    def _create_graph(probs, gc_lambda):
-        n = len(probs)
-        assert n > 0
-        result = igraph.Graph()
-        source = 0
-        sink = n + 1
-        result.add_vertices(n + 2)
-
-        result.add_edges( 
-            [(source, i+1) for i in range(n)], 
-            {'capacity': [get_capacity(p) for p in probs]} 
-        )
-        result.add_edges( 
-            [(i+1, sink) for i in range(n)], 
-            {'capacity': [get_capacity(1-p) for p in probs]} 
-        )
-        if n > 1:
-            result.add_edges(
-                [(i+1, i+2) for i in range(n-1)],
-                {'capacity': [get_capacity(gc_lambda)] * (n-1)}
-            )
-        return result, source, sink

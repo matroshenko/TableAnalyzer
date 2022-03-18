@@ -123,7 +123,6 @@ class Model(keras.models.Model):
 
         self._metric = AdjacencyFMeasure() if compute_metric else None
 
-    @tf.function(input_signature=[tf.TensorSpec(shape=(1, None, None, 3), dtype=tf.int32)])
     def call(self, input):
         input = self._normalize_image_layer(input)
         sfcn_output = self._sfcn(input)

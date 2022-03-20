@@ -20,14 +20,14 @@ def main(args):
     # because it won't run on images with dynamic size.
     model = ExportableSplitModel()
     model(tf.zeros(shape=(1, 1, 1, 3), dtype=tf.int32))
-    model.load_weights(args.model_file_path)
+    model.load_weights(args.checkpoint_path)
 
     tf.saved_model.save(model, args.dst_folder_path)
     
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Converts trained model to SavedModel format.")
-    parser.add_argument('model_file_path', help='Path to trained model checkpoint.')
+    parser = argparse.ArgumentParser(description="Exports trained model checkpoint to SavedModel format.")
+    parser.add_argument('checkpoint_path', help='Path to trained model checkpoint.')
     parser.add_argument('dst_folder_path', help='Path to folder where saved model will be stored.')
 
     main(parser.parse_args())

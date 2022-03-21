@@ -1,9 +1,8 @@
+#pragma once
+
 #include <vector>
 #include <unordered_map>
 #include <utility>
-
-#pragma once
-
 
 using std::vector;
 using std::unordered_map;

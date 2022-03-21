@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <unordered_map>
 #include <utility>
@@ -6,8 +8,6 @@
 #include "tensorflow/core/framework/shape_inference.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "min_cut_finder.h"
-
-#pragma once
 
 using namespace tensorflow;
 using std::vector;

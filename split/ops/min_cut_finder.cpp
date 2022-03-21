@@ -2,8 +2,10 @@
 #include <climits>
 #include <algorithm>
 #include <cassert>
+#include <queue>
 
 using std::min;
+using std::queue;
 
 
 MinCutFinder::MinCutFinder(const vector<vector<int>>& _graph, 
@@ -46,4 +48,45 @@ vector<bool> MinCutFinder::Find(int s, int t) const
     dfs(s, flow, result);
         
     return result;
+}
+
+bool MinCutFinder::bfs(
+    int s, int t, const unordered_map<pair<int, int>, int>& flow, 
+    vector<int>& parent) const
+{
+    const int numOfNodes = graph.size();
+    vector<bool> visited(numOfNodes, false);
+
+    queue<int> q;
+    q.push(s);
+    visited[s] = true;
+    parent[s] = -1;
+
+    while(q.size() > 0) {
+        const int u = q.front();
+        if(u == t) {
+            return true;
+        }
+        q.pop();
+
+        for(int v : graph[u]) {
+            if(!visited[v] && flow.at({u, v}) < capacity.at({u, v})) {
+                q.push(v);
+                parent[v] = u;
+                visited[v] = true;
+            }
+        }
+   }
+   return false;
+}
+
+void MinCutFinder::dfs(
+    int u, const unordered_map<pair<int, int>, int>& flow, vector<bool>& visited) const
+{
+    visited[u] = true;
+    for(int v : graph[u]) {
+        if(!visited[v] && flow.at({u, v}) < capacity.at({u, v})) {
+            dfs(v, flow, visited);
+        }
+    }
 }

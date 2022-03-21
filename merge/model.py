@@ -1,5 +1,6 @@
 import tensorflow as tf
 import tensorflow.keras as keras
+import numpy as np
 
 from merge.grid_pooling_layer import GridPoolingLayer
 from merge.concat_inputs_layer import ConcatInputsLayer
@@ -139,8 +140,8 @@ class Model(keras.models.Model):
         v_probs = input_dict['vert_split_points_probs']
         h_binary = input_dict['horz_split_points_binary']
         v_binary = input_dict['vert_split_points_binary']
-        h_positions = input_dict['horz_split_points_positions']
-        v_positions = input_dict['vert_split_points_positions']
+        h_positions = tf.numpy_function(self._get_positions, [h_binary], tf.int32)
+        v_positions = tf.numpy_function(self._get_positions, [v_binary], tf.int32)
 
         normalized_image = self._normalize_image_layer(image)
         input = self._concat_inputs_layer(
@@ -187,3 +188,7 @@ class Model(keras.models.Model):
         
         return metric_results
             
+    def _get_positions(self, mask):
+        mask = np.squeeze(mask, 0)
+        intervals_of_ones = get_intervals_of_ones(mask)
+        return np.array([interval.get_center() for interval in intervals_of_ones])

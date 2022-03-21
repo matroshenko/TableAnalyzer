@@ -139,8 +139,8 @@ class Model(keras.models.Model):
         v_probs = input_dict['vert_split_points_probs']
         h_binary = input_dict['horz_split_points_binary']
         v_binary = input_dict['vert_split_points_binary']
-        h_positions = self._get_intervals_centers(h_binary)
-        v_positions = self._get_intervals_centers(v_binary)
+        h_positions = input_dict['horz_split_points_positions']
+        v_positions = input_dict['vert_split_points_positions']
 
         normalized_image = self._normalize_image_layer(image)
         input = self._concat_inputs_layer(normalized_image, h_probs, v_probs, h_binary, v_binary)
@@ -183,9 +183,5 @@ class Model(keras.models.Model):
         
         metric_results['adjacency_f_measure'] = self._metric.result()
         
-        return metric_results   
-
-    def _get_intervals_centers(self, mask):
-        mask = tf.squeeze(mask, axis=0).numpy()
-        return [interval.get_center() for interval in get_intervals_of_ones(mask)]
+        return metric_results
             

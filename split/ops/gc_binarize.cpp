@@ -73,7 +73,7 @@ vector<vector<int>> GcBinarizeOp::createGraph(
     capacities.insert({{i+1, t}, getCapacity(1-prob)});
   }
 
-  for(int i = 0; i+1 < probsVector.size(); ++i) {
+  for(int i = 1; i < probsVector.size(); ++i) {
     graph[i].push_back(i+1);
     graph[i+1].push_back(i);
 

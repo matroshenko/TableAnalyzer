@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 
-gc_binarize_module = tf.load_op_library('./split/gc_binarize.so')
+gc_binarize_module = tf.load_op_library('./split/ops/gc_binarize.so')
 
 
 class BinarizeLayer(keras.layers.Layer):

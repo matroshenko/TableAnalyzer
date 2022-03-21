@@ -143,7 +143,9 @@ class Model(keras.models.Model):
         v_positions = input_dict['vert_split_points_positions']
 
         normalized_image = self._normalize_image_layer(image)
-        input = self._concat_inputs_layer(normalized_image, h_probs, v_probs, h_binary, v_binary)
+        input = self._concat_inputs_layer(
+            normalized_image, h_probs, v_probs, h_binary, v_binary,
+            h_positions, v_positions)
         sfcn_output = self._sfcn(input)
         
         up_prob1, up_prob2 = self._up_branch(sfcn_output, h_positions, v_positions)

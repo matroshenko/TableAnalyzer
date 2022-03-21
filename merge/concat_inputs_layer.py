@@ -49,8 +49,12 @@ class ConcatInputsLayer(keras.layers.Layer):
         result = self._draw_horz_lines(result, h_positions)
         result = tf.transpose(result)
         result = self._draw_horz_lines(result, v_positions)
-        return tf.transpose(result)
+        result = tf.transpose(result)
+        result = tf.expand_dims(result, 0)
+        result = tf.expand_dims(result, -1)
+        return result
 
     def _draw_horz_lines(self, image, positions):
+        indices = tf.expand_dims(positions, -1)
         updates = tf.ones(shape=(tf.size(positions), tf.shape(image)[1]))
-        return tf.tensor_scatter_nd_update(image, positions, updates)
+        return tf.tensor_scatter_nd_update(image, indices, updates)

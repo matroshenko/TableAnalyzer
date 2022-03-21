@@ -5,6 +5,9 @@
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/shape_inference.h"
 #include "tensorflow/core/framework/op_kernel.h"
+#include "min_cut_finder.h"
+
+#pragma once
 
 using namespace tensorflow;
 using std::vector;
@@ -20,7 +23,7 @@ public:
 private:
     vector<vector<int>> createGraph(
         const Tensor& probs, float lambda, 
-        unordered_map<pair<int, int>, int>& capacities) const;
+        MinCutFinder::TCapacity& capacities) const;
 
     int getCapacity(float value) const;
 };

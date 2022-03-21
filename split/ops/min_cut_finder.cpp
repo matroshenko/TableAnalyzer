@@ -9,7 +9,7 @@ using std::queue;
 
 
 MinCutFinder::MinCutFinder(const vector<vector<int>>& _graph, 
-        const unordered_map<pair<int, int>, int>& _capacity):
+        const TCapacity& _capacity):
     graph(_graph),
     capacity(_capacity)
 {
@@ -19,7 +19,7 @@ vector<bool> MinCutFinder::Find(int s, int t) const
 {
     const int numOfNodes = graph.size();
 
-    unordered_map<pair<int, int>, int> flow(capacity);
+    TCapacity flow(capacity);
     for(auto& item : flow) {
         item.second = 0;
     }
@@ -51,7 +51,7 @@ vector<bool> MinCutFinder::Find(int s, int t) const
 }
 
 bool MinCutFinder::bfs(
-    int s, int t, const unordered_map<pair<int, int>, int>& flow, 
+    int s, int t, const TCapacity& flow, 
     vector<int>& parent) const
 {
     const int numOfNodes = graph.size();
@@ -81,7 +81,7 @@ bool MinCutFinder::bfs(
 }
 
 void MinCutFinder::dfs(
-    int u, const unordered_map<pair<int, int>, int>& flow, vector<bool>& visited) const
+    int u, const TCapacity& flow, vector<bool>& visited) const
 {
     visited[u] = true;
     for(int v : graph[u]) {

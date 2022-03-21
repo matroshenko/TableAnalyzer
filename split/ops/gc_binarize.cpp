@@ -27,10 +27,10 @@ void GcBinarizeOp::Compute(OpKernelContext* context)
   OP_REQUIRES(context, TensorShapeUtils::IsVector(probs.shape()),
     errors::InvalidArgument("GcBinarize expects a 1-D vector as a first argument."));
   OP_REQUIRES(context, TensorShapeUtils::IsScalar(lambda.shape()),
-    errors::InvalidArgument("GcBinarize expects a scalar as a second argument."))
+    errors::InvalidArgument("GcBinarize expects a scalar as a second argument."));
 
-  unordered_map<pair<int, int>, int> capacities;
-  const vector<vector<int>> graph = createGraph(probs, lambda.scalar(), capacities);
+  MinCutFinder::TCapacity capacities;
+  const vector<vector<int>> graph = createGraph(probs, lambda.scalar<float>()(0), capacities);
   const MinCutFinder minCutFinder(graph, capacities);
   const vector<bool> partition = minCutFinder.Find(0, graph.size()-1);
 
@@ -50,7 +50,7 @@ void GcBinarizeOp::Compute(OpKernelContext* context)
 
 vector<vector<int>> GcBinarizeOp::createGraph(
   const Tensor& probs, float lambda, 
-  unordered_map<pair<int, int>, int>& capacities) const
+  MinCutFinder::TCapacity& capacities) const
 {
   const auto probsVector = probs.vec<float>();
   const int numOfNodes = probsVector.size() + 2;

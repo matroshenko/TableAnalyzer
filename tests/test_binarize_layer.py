@@ -8,6 +8,7 @@ from split.binarize_layer import BinarizeLayer
 
 class BinarizeLayerTestCase(TestCase):
     def setUp(self):
+        tf.config.set_visible_devices([], 'GPU')
         self.startTime = time.time()
 
     def tearDown(self):

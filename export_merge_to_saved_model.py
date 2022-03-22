@@ -12,11 +12,11 @@ class ExportableMergeModel(merge.model.Model):
         super().__init__(False)
 
     @tf.function(input_signature=[
-        tf.TensorSpec(shape=(None, None, 3), dtype=tf.int32),
-        tf.TensorSpec(shape=(None,), dtype=tf.float32),
-        tf.TensorSpec(shape=(None,), dtype=tf.float32),
-        tf.TensorSpec(shape=(None,), dtype=tf.int32),
-        tf.TensorSpec(shape=(None,), dtype=tf.int32),
+        tf.TensorSpec(shape=(None, None, 3), dtype=tf.int32, name='image'),
+        tf.TensorSpec(shape=(None,), dtype=tf.float32, name='horz_split_points_probs'),
+        tf.TensorSpec(shape=(None,), dtype=tf.float32, name='vert_split_points_probs'),
+        tf.TensorSpec(shape=(None,), dtype=tf.int32, name='horz_split_points_binary'),
+        tf.TensorSpec(shape=(None,), dtype=tf.int32, name='vert_split_points_binary'),
         ])
     def call(self, 
             image, horz_split_points_probs, vert_split_points_probs,

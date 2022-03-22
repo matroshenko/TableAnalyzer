@@ -34,6 +34,7 @@ class GridPoolingLayer(keras.layers.Layer):
             return tf.expand_dims(means, axis=0)
 
         result = tf.gather_nd(means, indices)
+        result = tf.ensure_shape(result, shape=input.shape)
         return tf.expand_dims(result, axis=0)
 
     def _create_reciprocal_cells_areas_matrix(

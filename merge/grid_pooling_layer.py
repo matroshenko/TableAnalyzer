@@ -12,23 +12,22 @@ class GridPoolingLayer(keras.layers.Layer):
         self._keep_size = keep_size
 
     def call(self, input, h_positions, v_positions):
-        assert tf.executing_eagerly()
-        assert input.shape[0] == 1
+        tf.assert_equal(tf.shape(input)[0], 1)
+        input = input[0]
 
-        height = input.shape[1]
-        width = input.shape[2]
-        channels = input.shape[3]
-        h_positions = list(h_positions.numpy())
-        v_positions = list(v_positions.numpy())
+        height = tf.shape(input)[0]
+        width = tf.shape(input)[1]
+        channels = tf.shape(input)[2]
 
-        grid = GridStructure([0] + h_positions + [height], [0] + v_positions + [width])
-
-        input = tf.squeeze(input, axis=0)
-        multiplier = self._create_reciprocal_cells_areas_matrix(grid)
+        multiplier = tf.numpy_function( 
+            self._create_reciprocal_cells_areas_matrix,
+            [height, width, h_positions, v_positions], Tout=tf.float32)
         normalized_input = multiplier * input
 
-        means = tf.zeros(shape=(grid.get_rows_count(), grid.get_cols_count(), channels))
-        indices = self._create_indices_matrix(grid)
+        means = tf.zeros(shape=(tf.size(h_positions)+1, tf.size(v_positions)+1, channels))
+        indices = tf.numpy_function(
+            self._create_indices_matrix,
+            [height, width, h_positions, v_positions], Tout=tf.int32)
         means = tf.tensor_scatter_nd_add(means, indices, normalized_input)
         
         if not self._keep_size:
@@ -37,9 +36,12 @@ class GridPoolingLayer(keras.layers.Layer):
         result = tf.gather_nd(means, indices)
         return tf.expand_dims(result, axis=0)
 
-    def _create_reciprocal_cells_areas_matrix(self, grid):
-        height = grid.get_bounding_rect().get_height()
-        width = grid.get_bounding_rect().get_width()
+    def _create_reciprocal_cells_areas_matrix(
+            self, height, width, h_positions, v_positions):
+
+        grid = GridStructure(
+            [0] + list(h_positions) + [height], 
+            [0] + list(v_positions) + [width])
 
         result = np.zeros(shape=(height, width, 1), dtype='float32')
         for i in range(grid.get_rows_count()):
@@ -50,9 +52,13 @@ class GridPoolingLayer(keras.layers.Layer):
                 result[cell.top : cell.bottom, cell.left : cell.right] = 1 / cell.get_area()
         return result
 
-    def _create_indices_matrix(self, grid):
-        height = grid.get_bounding_rect().get_height()
-        width = grid.get_bounding_rect().get_width()
+    def _create_indices_matrix(
+            self, height, width, h_positions, v_positions):
+        
+        grid = GridStructure(
+            [0] + list(h_positions) + [height], 
+            [0] + list(v_positions) + [width])
+
         result = np.zeros(shape=(height, width, 2), dtype='int32')
 
         for i in range(grid.get_rows_count()):

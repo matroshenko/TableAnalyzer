@@ -11,6 +11,9 @@ struct Rect {
     int Bottom;
 
     Rect(int left, int top, int right, int bottom);
+
+    bool IsEmpty() const;
+    int GetArea() const;
 };
 
 

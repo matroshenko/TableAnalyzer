@@ -13,6 +13,16 @@ Rect::Rect(int left, int top, int right, int bottom) :
     assert(Left <= Right && Top <= Bottom);
 }
 
+bool Rect::IsEmpty() const
+{
+    return Left == Right || Top == Bottom;
+}
+
+int Rect::GetArea() const
+{
+    return (Right - Left) * (Bottom - Top);
+}
+
 /////////////////////////////////////////////////////////////////////
 // GridStructure
 

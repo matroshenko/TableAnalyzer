@@ -18,6 +18,8 @@ class GridPoolingLayer(keras.layers.Layer):
         height = input.shape[1]
         width = input.shape[2]
         channels = input.shape[3]
+        h_positions = list(h_positions.numpy())
+        v_positions = list(v_positions.numpy())
 
         grid = GridStructure([0] + h_positions + [height], [0] + v_positions + [width])
 

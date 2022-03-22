@@ -1,5 +1,6 @@
 import tensorflow as tf
 import tensorflow.keras as keras
+import numpy as np
 
 from merge.grid_pooling_layer import GridPoolingLayer
 from merge.concat_inputs_layer import ConcatInputsLayer
@@ -139,11 +140,13 @@ class Model(keras.models.Model):
         v_probs = input_dict['vert_split_points_probs']
         h_binary = input_dict['horz_split_points_binary']
         v_binary = input_dict['vert_split_points_binary']
-        h_positions = self._get_intervals_centers(h_binary)
-        v_positions = self._get_intervals_centers(v_binary)
+        h_positions = tf.numpy_function(self._get_positions, [h_binary[0]], tf.int32)
+        v_positions = tf.numpy_function(self._get_positions, [v_binary[0]], tf.int32)
 
         normalized_image = self._normalize_image_layer(image)
-        input = self._concat_inputs_layer(normalized_image, h_probs, v_probs, h_binary, v_binary)
+        input = self._concat_inputs_layer(
+            normalized_image, h_probs, v_probs, h_binary, v_binary,
+            h_positions, v_positions)
         sfcn_output = self._sfcn(input)
         
         up_prob1, up_prob2 = self._up_branch(sfcn_output, h_positions, v_positions)
@@ -183,9 +186,8 @@ class Model(keras.models.Model):
         
         metric_results['adjacency_f_measure'] = self._metric.result()
         
-        return metric_results   
-
-    def _get_intervals_centers(self, mask):
-        mask = tf.squeeze(mask, axis=0).numpy()
-        return [interval.get_center() for interval in get_intervals_of_ones(mask)]
+        return metric_results
             
+    def _get_positions(self, mask):
+        intervals_of_ones = get_intervals_of_ones(mask)
+        return np.array([interval.get_center() for interval in intervals_of_ones], dtype=int)

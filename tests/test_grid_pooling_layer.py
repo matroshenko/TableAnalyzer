@@ -14,8 +14,8 @@ class GridPoolingLayerTestCase(TestCase):
             [[20, 21], [22, 23], [24, 25], [26, 27], [28, 29]],
             [[30, 31], [32, 33], [34, 35], [36, 37], [38, 39]],
         ]], dtype='float32')
-        self.h_positions = [1, 3]
-        self.v_positions = [2, 4]
+        self.h_positions = tf.constant([1, 3])
+        self.v_positions = tf.constant([2, 4])
 
     def test_pool_no_keep_size(self):
         expected_output = tf.constant([[

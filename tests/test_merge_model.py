@@ -8,6 +8,9 @@ from merge.model import Model
 
 
 class ModelTestCase(TestCase):
+    def setUp(self):
+        tf.config.set_visible_devices([], 'GPU')
+
     def test_output_shape(self):
         tf.random.set_seed(42)
 

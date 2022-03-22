@@ -8,7 +8,8 @@ from metrics.adjacency_f_measure import AdjacencyFMeasure
 from table.markup_table import Table
 from table.grid_structure import GridStructureBuilder
 from table.cells_structure import CellsStructureBuilder
-from utils.interval import get_intervals_of_ones
+
+intervals_centers_module = tf.load_op_library('merge/ops/intervals_centers.so')
 
 class SharedFullyConvolutionalNetwork(keras.layers.Layer):
     def __init__(self):
@@ -140,8 +141,8 @@ class Model(keras.models.Model):
         v_probs = input_dict['vert_split_points_probs']
         h_binary = input_dict['horz_split_points_binary']
         v_binary = input_dict['vert_split_points_binary']
-        h_positions = tf.numpy_function(self._get_positions, [h_binary[0]], tf.int32)
-        v_positions = tf.numpy_function(self._get_positions, [v_binary[0]], tf.int32)
+        h_positions = intervals_centers_module.intervals_centers(h_binary[0])
+        v_positions = intervals_centers_module.intervals_centers(v_binary[0])
 
         normalized_image = self._normalize_image_layer(image)
         input = self._concat_inputs_layer(
@@ -187,7 +188,3 @@ class Model(keras.models.Model):
         metric_results['adjacency_f_measure'] = self._metric.result()
         
         return metric_results
-            
-    def _get_positions(self, mask):
-        intervals_of_ones = get_intervals_of_ones(mask)
-        return np.array([interval.get_center() for interval in intervals_of_ones], dtype=int)

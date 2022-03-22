@@ -38,13 +38,11 @@ def main(args):
         decay_rate=0.75,
         staircase=True)
 
-    # Currently MERGE model can't run in graph mode.
-    run_eagerly = False if args.model_type == 'SPLIT' else True
     model.compile(
         keras.optimizers.Adam(lr_schedule), 
         loss=module.training.get_losses_dict(), 
         loss_weights=module.training.get_losses_weights(),
-        run_eagerly=run_eagerly)
+        run_eagerly=False)
 
     ds_suffix = '_split' if args.model_type == 'SPLIT' else '_merge'
     ds = tfds.load(args.dataset_name + ds_suffix, split='train')

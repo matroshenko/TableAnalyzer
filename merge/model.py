@@ -190,4 +190,4 @@ class Model(keras.models.Model):
             
     def _get_positions(self, mask):
         intervals_of_ones = get_intervals_of_ones(mask)
-        return np.array([interval.get_center() for interval in intervals_of_ones])
+        return np.array([interval.get_center() for interval in intervals_of_ones], dtype=int)

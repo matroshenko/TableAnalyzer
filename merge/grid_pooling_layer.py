@@ -27,9 +27,9 @@ class GridPoolingLayer(keras.layers.Layer):
         normalized_input = tf.expand_dims(multiplier, -1) * input
 
         means = tf.zeros(shape=(tf.size(h_positions)+1, tf.size(v_positions)+1, channels))
-        indices = tf.numpy_function(
-            self._create_indices_matrix,
-            [height, width, h_positions, v_positions], Tout=tf.int32)
+        indices = grid_pooling_helper_ops_module.indices_cube(
+            height, width, h_positions, v_positions
+        )
         means = tf.tensor_scatter_nd_add(means, indices, normalized_input)
         
         if not self._keep_size:
@@ -38,18 +38,3 @@ class GridPoolingLayer(keras.layers.Layer):
         result = tf.gather_nd(means, indices)
         result = tf.ensure_shape(result, shape=input.shape)
         return tf.expand_dims(result, axis=0)
-
-    def _create_indices_matrix(
-            self, height, width, h_positions, v_positions):
-        
-        grid = GridStructure(
-            [0] + list(h_positions) + [height], 
-            [0] + list(v_positions) + [width])
-
-        result = np.zeros(shape=(height, width, 2), dtype='int32')
-
-        for i in range(grid.get_rows_count()):
-            for j in range(grid.get_cols_count()):
-                cell = grid.get_cell_rect(Rect(j, i, j+1, i+1))
-                result[cell.top : cell.bottom, cell.left : cell.right] = [i, j]
-        return result

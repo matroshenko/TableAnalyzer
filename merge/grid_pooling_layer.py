@@ -1,9 +1,5 @@
 import tensorflow as tf
 import tensorflow.keras as keras
-import numpy as np
-
-from table.grid_structure import GridStructure
-from utils.rect import Rect
 
 grid_pooling_helper_ops_module = tf.load_op_library('merge/ops/grid_pooling_helper_ops.so')
 

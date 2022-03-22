@@ -1,7 +1,7 @@
 import tensorflow as tf
 import tensorflow.keras as keras
 
-grid_pooling_helper_ops_module = tf.load_op_library('merge/ops/grid_pooling_helper_ops.so')
+ops_module = tf.load_op_library('merge/ops/ops.so')
 
 
 class GridPoolingLayer(keras.layers.Layer):
@@ -17,13 +17,13 @@ class GridPoolingLayer(keras.layers.Layer):
         width = tf.shape(input)[1]
         channels = tf.shape(input)[2]
 
-        multiplier = grid_pooling_helper_ops_module.reciprocal_cells_areas_matrix(
+        multiplier = ops_module.reciprocal_cells_areas_matrix(
             height, width, h_positions, v_positions
         )
         normalized_input = tf.expand_dims(multiplier, -1) * input
 
         means = tf.zeros(shape=(tf.size(h_positions)+1, tf.size(v_positions)+1, channels))
-        indices = grid_pooling_helper_ops_module.indices_cube(
+        indices = ops_module.indices_cube(
             height, width, h_positions, v_positions
         )
         means = tf.tensor_scatter_nd_add(means, indices, normalized_input)

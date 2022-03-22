@@ -15,7 +15,7 @@ g++ -std=c++14 -shared split/ops/min_cut_finder.cpp split/ops/gc_binarize.cpp -o
 ```
 4. Build custom ops for MERGE model:
 ```bash
-g++ -std=c++14 -shared merge/ops/reciprocal_cells_areas_matrix.cpp merge/ops/grid_structure.cpp merge/ops/indices_cube.cpp -o merge/ops/grid_pooling_helper_ops.so -fPIC ${TF_CFLAGS[@]} ${TF_LFLAGS[@]} -O2 -D_GLIBCXX_USE_CXX11_ABI=0
+g++ -std=c++14 -shared merge/ops/reciprocal_cells_areas_matrix.cpp merge/ops/grid_structure.cpp merge/ops/indices_cube.cpp merge/ops/intervals_centers.cpp -o merge/ops/ops.so -fPIC ${TF_CFLAGS[@]} ${TF_LFLAGS[@]} -O2 -D_GLIBCXX_USE_CXX11_ABI=0
 ```
 
 # Usage

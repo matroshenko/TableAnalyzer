@@ -9,7 +9,7 @@ from table.markup_table import Table
 from table.grid_structure import GridStructureBuilder
 from table.cells_structure import CellsStructureBuilder
 
-intervals_centers_module = tf.load_op_library('merge/ops/intervals_centers.so')
+ops_module = tf.load_op_library('merge/ops/ops.so')
 
 class SharedFullyConvolutionalNetwork(keras.layers.Layer):
     def __init__(self):
@@ -141,8 +141,8 @@ class Model(keras.models.Model):
         v_probs = input_dict['vert_split_points_probs']
         h_binary = input_dict['horz_split_points_binary']
         v_binary = input_dict['vert_split_points_binary']
-        h_positions = intervals_centers_module.intervals_centers(h_binary[0])
-        v_positions = intervals_centers_module.intervals_centers(v_binary[0])
+        h_positions = ops_module.intervals_centers(h_binary[0])
+        v_positions = ops_module.intervals_centers(v_binary[0])
 
         normalized_image = self._normalize_image_layer(image)
         input = self._concat_inputs_layer(

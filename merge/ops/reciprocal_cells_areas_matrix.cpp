@@ -28,7 +28,7 @@ REGISTER_KERNEL_BUILDER(
 void ReciprocalCellsAreasMatrixOp::Compute(OpKernelContext* context)
 {
     const int height = context->input(0).scalar<int>()(0);
-    const int width = context->input(1).scalar<int>()(1);
+    const int width = context->input(1).scalar<int>()(0);
     const Tensor& hPositions = context->input(2);
     const Tensor& vPositions = context->input(3);
 

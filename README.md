@@ -7,7 +7,7 @@ C. Tensmeyer, V. I. Morariu, B. Price, S. Cohen and T. Martinez, "Deep Splitting
 
 1. Install poppler for pdf support: `sudo apt install poppler-utils`.
 2. Install python packages: `pip install -r requirements.txt`.
-3. Build custom ops for SPLIT model (see (section)[https://www.tensorflow.org/guide/create_op#build_the_op_library] for details):
+3. Build custom ops for SPLIT model (see [section](https://www.tensorflow.org/guide/create_op#build_the_op_library) for details):
 ```bash
 TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
 TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )

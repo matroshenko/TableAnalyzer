@@ -10,7 +10,8 @@ REGISTER_OP("IntervalsCenters")
     .Input("mask: int32")
     .Output("centers: int32")
     .SetShapeFn([](shape_inference::InferenceContext* c) {
-        return c->Vector(shape_inference::InferenceContext::kUnknownDim);
+        c->set_output(0, c->Vector(shape_inference::InferenceContext::kUnknownDim));
+        return Status::OK();
     });
 
 REGISTER_KERNEL_BUILDER(Name("IntervalsCenters").Device(DEVICE_CPU), IntervalsCentersOp);
@@ -18,7 +19,7 @@ REGISTER_KERNEL_BUILDER(Name("IntervalsCenters").Device(DEVICE_CPU), IntervalsCe
 //////////////////////////////////////////////////////////////////////////////
 // IntervalsCentersOp
 
-void Compute(OpKernelContext* context)
+void IntervalsCentersOp::Compute(OpKernelContext* context)
 {
     const Tensor& mask = context->input(0);
     OP_REQUIRES(context, TensorShapeUtils::IsVector(mask.shape()),
@@ -27,7 +28,7 @@ void Compute(OpKernelContext* context)
     const vector<int> centers = getIntervalsCenters(mask);
 
     // Create an output tensor
-    TensorShape resultShape({centers.size()});
+    TensorShape resultShape({static_cast<int>(centers.size())});
     Tensor* resultTensor = 0;
 
     OP_REQUIRES_OK(

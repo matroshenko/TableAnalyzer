@@ -47,7 +47,8 @@ void ReciprocalCellsAreasMatrixOp::Compute(OpKernelContext* context)
                 continue;
             }
             const int area = cell.GetArea();
-            setValue(cell, 1.0f / cell.GetArea(), *resultTensor);
+            assert(area > 0);
+            setValue(cell, 1.0f / area, *resultTensor);
         }
     }
 }
@@ -67,7 +68,8 @@ vector<int> ReciprocalCellsAreasMatrixOp::extractPositions(
     const auto vec = tensor.vec<int>();
 
     vector<int> result;
-    result.reserve(vec.size() + 1);
+    result.reserve(vec.size() + 2);
+    result.push_back(0);
     for(int i = 0; i < vec.size(); ++i) {
         result.push_back(vec(i));
     }

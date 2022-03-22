@@ -13,6 +13,10 @@ TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.ge
 TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
 g++ -std=c++14 -shared split/ops/min_cut_finder.cpp split/ops/gc_binarize.cpp -o split/ops/gc_binarize.so -fPIC ${TF_CFLAGS[@]} ${TF_LFLAGS[@]} -O2 -D_GLIBCXX_USE_CXX11_ABI=0
 ```
+4. Build custom ops for MERGE model:
+```bash
+g++ -std=c++14 -shared merge/ops/reciprocal_cells_areas_matrix.cpp merge/ops/grid_structure.cpp merge/ops/indices_cube.cpp -o merge/ops/grid_pooling_helper_ops.so -fPIC ${TF_CFLAGS[@]} ${TF_LFLAGS[@]} -O2 -D_GLIBCXX_USE_CXX11_ABI=0
+```
 
 # Usage
 To train model use script `train_model.py`.

@@ -78,10 +78,14 @@ void IndicesCubeOp::setValues(
     const Rect& rect, int value1, int value2, Tensor& result) const
 {
     auto resultCube = result.tensor<int, 3>();
-    for(int i = rect.Top; i < rect.Bottom; ++i) {
-        for(int j = rect.Left; j < rect.Right; ++j) {
-            resultCube(i, j, 0) = value1;
-            resultCube(i, j, 1) = value2;
-        }
+    {
+        const Eigen::array<int, 3> offsets = {rect.Top, rect.Left, 0};
+        const Eigen::array<int, 3> extents = {rect.Height(), rect.Width(), 1};
+        resultCube.slice(offsets, extents).setConstant(value1);
+    }
+    {
+        const Eigen::array<int, 3> offsets = {rect.Top, rect.Left, 1};
+        const Eigen::array<int, 3> extents = {rect.Height(), rect.Width(), 1};
+        resultCube.slice(offsets, extents).setConstant(value2);
     }
 }

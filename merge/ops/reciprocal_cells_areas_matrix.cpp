@@ -81,9 +81,8 @@ void ReciprocalCellsAreasMatrixOp::setValue(
     const Rect& rect, float value, Tensor& result) const
 {
     auto resultMatrix = result.matrix<float>();
-    for(int i = rect.Top; i < rect.Bottom; ++i) {
-        for(int j = rect.Left; j < rect.Right; ++j) {
-            resultMatrix(i, j) = value;
-        }
-    }
+    const Eigen::array<int, 2> offsets = {rect.Top, rect.Left};
+    const Eigen::array<int, 2> extents = {rect.Height(), rect.Width()};
+    auto slice = resultMatrix.slice(offsets, extents);
+    slice.setConstant(value);
 }

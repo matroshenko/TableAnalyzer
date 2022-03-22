@@ -18,11 +18,6 @@ bool Rect::IsEmpty() const
     return Left == Right || Top == Bottom;
 }
 
-int Rect::GetArea() const
-{
-    return (Right - Left) * (Bottom - Top);
-}
-
 /////////////////////////////////////////////////////////////////////
 // GridStructure
 

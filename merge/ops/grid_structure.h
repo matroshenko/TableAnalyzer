@@ -13,7 +13,9 @@ struct Rect {
     Rect(int left, int top, int right, int bottom);
 
     bool IsEmpty() const;
-    int GetArea() const;
+    int Height() const { return Bottom - Top; }
+    int Width() const { return Right - Left; }
+    int GetArea() const { return Height() * Width(); }
 };
 
 

@@ -19,6 +19,8 @@ To train model use script `train_model.py`.
 
 To evaluate model use script `evaluate_model.py`.
 
+To export SPLERGE model to SavedModel format use script `export_to_saved_model.py`.
+
 Run with `--help` argument to view usage info.
 
 # Datasets

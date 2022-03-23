@@ -7,15 +7,11 @@ C. Tensmeyer, V. I. Morariu, B. Price, S. Cohen and T. Martinez, "Deep Splitting
 
 1. Install poppler for pdf support: `sudo apt install poppler-utils`.
 2. Install python packages: `pip install -r requirements.txt`.
-3. Build custom ops for SPLIT model (see [section](https://www.tensorflow.org/guide/create_op#build_the_op_library) for details):
+3. Build custom ops (see [section](https://www.tensorflow.org/guide/create_op#build_the_op_library) for more info):
 ```bash
 TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
 TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
-g++ -std=c++14 -shared split/ops/*.cpp -o split/ops/gc_binarize.so -fPIC ${TF_CFLAGS[@]} ${TF_LFLAGS[@]} -O2 -D_GLIBCXX_USE_CXX11_ABI=0
-```
-4. Build custom ops for MERGE model:
-```bash
-g++ -std=c++14 -shared merge/ops/*.cpp -o merge/ops/ops.so -fPIC ${TF_CFLAGS[@]} ${TF_LFLAGS[@]} -O2 -D_GLIBCXX_USE_CXX11_ABI=0
+g++ -std=c++14 -shared ops/*.cpp -o ops/ops.so -fPIC ${TF_CFLAGS[@]} ${TF_LFLAGS[@]} -O2 -D_GLIBCXX_USE_CXX11_ABI=0
 ```
 
 # Usage

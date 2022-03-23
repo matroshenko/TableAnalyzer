@@ -42,10 +42,7 @@ def main(args):
     tf.saved_model.save(model, args.dst_folder_path)
     # Copy custom ops sources and libs to destination folder.
     shutil.copytree(
-        './split/ops', os.path.join(args.dst_folder_path, 'ops'), 
-        dirs_exist_ok=True)
-    shutil.copytree(
-        './merge/ops', os.path.join(args.dst_folder_path, 'ops'), 
+        './ops', os.path.join(args.dst_folder_path, 'ops'), 
         dirs_exist_ok=True)
     
 

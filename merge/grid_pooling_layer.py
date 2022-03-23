@@ -1,7 +1,7 @@
 import tensorflow as tf
 import tensorflow.keras as keras
 
-ops_module = tf.load_op_library('merge/ops/ops.so')
+ops_module = tf.load_op_library('ops/ops.so')
 
 
 class GridPoolingLayer(keras.layers.Layer):

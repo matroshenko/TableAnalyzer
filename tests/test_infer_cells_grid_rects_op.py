@@ -2,7 +2,7 @@ from unittest import TestCase, main
 
 import tensorflow as tf
 
-ops_module = tf.load_op_library('./merge/ops/ops.so')
+ops_module = tf.load_op_library('ops/ops.so')
 
 class TestCellsStructure(TestCase):
     def test_simple(self):

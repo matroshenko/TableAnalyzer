@@ -8,7 +8,7 @@ from table.markup_table import Table
 from table.grid_structure import GridStructureBuilder
 from utils.rect import Rect
 
-ops_module = tf.load_op_library('merge/ops/ops.so')
+ops_module = tf.load_op_library('ops/ops.so')
 
 class SharedFullyConvolutionalNetwork(keras.layers.Layer):
     def __init__(self):

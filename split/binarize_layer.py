@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 
-gc_binarize_module = tf.load_op_library('./split/ops/gc_binarize.so')
+ops_module = tf.load_op_library('ops/ops.so')
 
 
 class BinarizeLayer(keras.layers.Layer):
@@ -12,5 +12,5 @@ class BinarizeLayer(keras.layers.Layer):
         self.gc_lambda = gc_lambda
 
     def call(self, probs):
-        result = gc_binarize_module.gc_binarize(probs[0], self.gc_lambda)
+        result = ops_module.gc_binarize(probs[0], self.gc_lambda)
         return tf.expand_dims(result, axis=0)

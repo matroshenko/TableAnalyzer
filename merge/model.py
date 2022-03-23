@@ -1,13 +1,12 @@
 import tensorflow as tf
 import tensorflow.keras as keras
-import numpy as np
 
 from merge.grid_pooling_layer import GridPoolingLayer
 from merge.concat_inputs_layer import ConcatInputsLayer
 from metrics.adjacency_f_measure import AdjacencyFMeasure
 from table.markup_table import Table
 from table.grid_structure import GridStructureBuilder
-from table.cells_structure import CellsStructureBuilder
+from utils.rect import Rect
 
 ops_module = tf.load_op_library('merge/ops/ops.so')
 
@@ -158,11 +157,23 @@ class Model(keras.models.Model):
         merge_down_prob1, merge_right_prob1 = self._combine_outputs1(up_prob1, down_prob1, left_prob1, right_prob1)
         merge_down_prob2, merge_right_prob2 = self._combine_outputs2(up_prob2, down_prob2, left_prob2, right_prob2)
 
+        merge_right_mask = tf.squeeze(merge_right_prob2 >= 0.5, axis=0)
+        merge_down_mask = tf.squeeze(merge_down_prob2 >= 0.5, axis=0)
+        cells_grid_rects = ops_module.infer_cells_grid_rects(merge_right_mask, merge_down_mask)
+
         return {
+            # For training.
             'merge_down_probs1': merge_down_prob1,
             'merge_right_probs1': merge_right_prob1,
             'merge_down_probs2': merge_down_prob2,
             'merge_right_probs2': merge_right_prob2,
+
+            # For inference.
+            'h_positions': h_positions,
+            'v_positions': v_positions,
+            'cells_grid_rects': cells_grid_rects,
+
+            # For keras to be happy.
             'markup_table': None
         }
 
@@ -180,11 +191,16 @@ class Model(keras.models.Model):
         
         grid = GridStructureBuilder(markup_table.rect, h_binary, v_binary).build()
 
-        merge_down_mask = (tf.squeeze(prediction['merge_down_probs2'], axis=0) >= 0.5).numpy()
-        merge_right_mask = (tf.squeeze(prediction['merge_right_probs2'], axis=0) >= 0.5).numpy()
-        cells = CellsStructureBuilder(merge_right_mask, merge_down_mask).build()
+        cells = self._get_cells_grid_rects(prediction['cells_grid_rects'].numpy())
         self._metric.update_state_eager(markup_table, grid, cells)
         
         metric_results['adjacency_f_measure'] = self._metric.result()
         
         return metric_results
+
+    def _get_cells_grid_rects(self, rects_array):
+        result = []
+        for rect in rects_array:
+            left, top, right, bottom = rect
+            result.append(Rect(left, top, right, bottom))
+        return result

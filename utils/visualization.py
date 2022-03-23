@@ -1,8 +1,7 @@
 from PIL import Image, ImageDraw
 
 from utils.rect import Rect
-from table.grid_structure import GridStructureBuilder
-from table.cells_structure import CellsStructureBuilder
+from table.grid_structure import GridStructure
 from utils.interval import get_intervals_of_ones
 
 
@@ -22,19 +21,17 @@ def create_split_result_image(table_image, horz_split_points_mask, vert_split_po
     return Image.blend(table_image, split_points_image, 0.5)
 
 def create_merge_result_image(
-        table_image, horz_split_points_mask, vert_split_points_mask,
-        merge_right_mask, merge_down_mask):
-    height = len(horz_split_points_mask)
-    width = len(vert_split_points_mask)
-    assert table_image.size == (width, height)
-    grid_structure = GridStructureBuilder(
-        Rect(0, 0, width, height), horz_split_points_mask, vert_split_points_mask).build()
-    cells_structure = CellsStructureBuilder(merge_right_mask, merge_down_mask).build()
+        table_image, h_positions, v_positions, cells_grid_rects):
+    width, height = table_image.size
+    grid_structure = GridStructure(
+        [0] + list(h_positions) + [height],
+        [0] + list(v_positions) + [width])
     
     result_image = table_image.copy()
     draw = ImageDraw.Draw(result_image)
-    for cell in cells_structure:
-        rect = grid_structure.get_cell_rect(cell)
+    for cell in cells_grid_rects:
+        left, top, right, bottom = cell
+        rect = grid_structure.get_cell_rect(Rect(left, top, right, bottom))
         draw.rectangle(rect.as_tuple(), outline=(255, 0, 0))
     return result_image
 

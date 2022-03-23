@@ -6,6 +6,8 @@
 
 using std::min;
 using std::max;
+using std::sort;
+using std::make_pair;
 
 
 CellsStructureBuilder::CellsStructureBuilder(
@@ -23,6 +25,14 @@ vector<Rect> CellsStructureBuilder::Build() const
 {
     vector<Rect> cells = buildInitialCells();
     mergeIntersectingCells(cells);
+
+    // Sort cells by top-left.
+    sort(cells.begin(), cells.end(),
+        [](const Rect& first, const Rect& second) {
+            return make_pair(first.Top, first.Left) < make_pair(second.Top, second.Left);
+        }
+    );
+
     return cells;
 }
 
@@ -96,9 +106,9 @@ Rect CellsStructureBuilder::getComponentRect(const vector<int>& component) const
     for(int u : component) {
         const auto index2D = to2DIndex(u);
         top = min(top, index2D.first);
-        bottom = max(bottom, index2D.first);
+        bottom = max(bottom, index2D.first + 1);
         left = min(left, index2D.second);
-        right = max(right, index2D.second);
+        right = max(right, index2D.second + 1);
     }
 
     return Rect(left, top, right, bottom);

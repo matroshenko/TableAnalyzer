@@ -31,8 +31,9 @@ class ExportableMergeModel(merge.model.Model):
         }    
         outputs = super().call(inputs)
         return {
-            'merge_right_probs': tf.squeeze(outputs['merge_right_probs2'], 0),
-            'merge_down_probs': tf.squeeze(outputs['merge_down_probs2'], 0)
+            'h_positions': outputs['h_positions'],
+            'v_positions': outputs['v_positions'],
+            'cells_grid_rects': outputs['cells_grid_rects']
         }
 
 

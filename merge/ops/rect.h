@@ -12,4 +12,7 @@ struct Rect {
     int Height() const { return Bottom - Top; }
     int Width() const { return Right - Left; }
     int GetArea() const { return Height() * Width(); }
+
+    bool HasIntersection(const Rect& other) const;
+    Rect operator|(const Rect& other) const;
 };
